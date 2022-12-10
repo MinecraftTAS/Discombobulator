@@ -1,0 +1,11 @@
+pluginManagement {
+	repositories {
+		mavenLocal() // For development purposes
+		mavenCentral()
+		maven { url = "https://maven.mgnet.work" }
+		maven { url = "https://maven.fabricmc.net" }
+		gradlePluginPortal()
+	}
+}
+
+rootDir.listFiles().each { if (it.directory && new File(it, 'build.gradle').exists()) include ":${it.name}" }

@@ -1,0 +1,16 @@
+plugins {
+	id 'fabric-loom' version '1.1-SNAPSHOT'
+}
+
+sourceCompatibility = targetCompatibility = 1.8
+
+repositories {
+	//mavenLocal()
+	maven { url 'https://raw.githubusercontent.com/BleachDev/cursed-mappings/main/' }
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:1.12.2"
+	mappings "net.legacyfabric:yarn:1.12.2+build.mcp"
+	modImplementation "net.fabricmc:fabric-loader:0.14.11"
+}

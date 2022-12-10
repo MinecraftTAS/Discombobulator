@@ -1,0 +1,23 @@
+// Plugins used in the project
+plugins {
+    id 'java-gradle-plugin'
+	id 'maven-publish'
+}
+
+// Change java compatibility level to 17
+sourceCompatibility = targetCompatibility = 17
+
+// Name, version and group for the project
+version = "1.0.0-SNAPSHOT"
+group = "com.minecrafttas"
+archivesBaseName = "discombobulator"
+
+// Configure the gradle plugin
+gradlePlugin {
+    plugins {
+        discombobulator {
+            id = 'discombobulator'
+            implementationClass = 'com.minecrafttas.discombobulator.Discombobulator'
+        }
+    }
+}
