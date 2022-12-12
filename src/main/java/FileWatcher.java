@@ -63,7 +63,7 @@ public abstract class FileWatcher {
 		while ((key = this.service.take()) != null) {
 			for (var event : key.pollEvents()) {
 				// Trigger events for file system events
-				var path = (Path) event.context();
+				var path = rootDir.resolve((Path)event.context());
 
 				if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE)
 					if (this.watchKeys.containsKey(path))
