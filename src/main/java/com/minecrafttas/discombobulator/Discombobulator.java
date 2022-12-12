@@ -4,6 +4,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
+import com.minecrafttas.discombobulator.tasks.TaskProcess;
 
 /**
  * Gradle plugin main class
@@ -11,7 +12,7 @@ import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
  */
 public class Discombobulator implements Plugin<Project> {
 
-	private PreprocessingConfiguration config;
+	public static PreprocessingConfiguration config;
 
 	/**
 	 * Apply the gradle plugin to the project
@@ -19,7 +20,9 @@ public class Discombobulator implements Plugin<Project> {
 	@Override
 	public void apply(Project project) {
 		// Make buildscript extension for preprocessor
-		this.config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
+		config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
+		// Register synchronization task
+		project.getTasks().register("process", TaskProcess.class).get().setGroup("dicombobulator");
 	}
 
 }
