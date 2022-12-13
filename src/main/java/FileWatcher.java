@@ -27,6 +27,8 @@ public abstract class FileWatcher {
 	 * @throws IOException Watch service not supported
 	 */
 	public FileWatcher(Path rootDir) throws IOException {
+		if (!Files.isDirectory(rootDir))
+			throw new IOException("Invalid path: " + rootDir);
 		this.service = FileSystems.getDefault().newWatchService();
 		this.rootDir = rootDir;
 		this.init();
@@ -63,7 +65,7 @@ public abstract class FileWatcher {
 		while ((key = this.service.take()) != null) {
 			for (var event : key.pollEvents()) {
 				// Trigger events for file system events
-				var path = rootDir.resolve((Path)event.context());
+				var path = this.rootDir.resolve((Path) event.context());
 
 				if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE)
 					if (this.watchKeys.containsKey(path))
@@ -99,9 +101,8 @@ public abstract class FileWatcher {
 	 * @throws IOException Watch service exception
 	 */
 	protected void deleteDirectory(Path path) throws IOException {
-		System.out.println(this.watchKeys.get(path));
-		// unregister deleted folder from watcher
-		//		path.register(this.service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
+		// unregister deleted folder from wather
+		this.watchKeys.get(path).cancel();
 	}
 
 	/**
