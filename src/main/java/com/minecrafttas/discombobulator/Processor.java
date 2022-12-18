@@ -1,5 +1,6 @@
 package com.minecrafttas.discombobulator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,7 +35,7 @@ public class Processor {
 	private static boolean overFlow = false;
 	
 	/**
-	 * True whem the versions match up perfectly
+	 * True when the versions match up perfectly
 	 */
 	private static boolean perfectMatch = false;
 
