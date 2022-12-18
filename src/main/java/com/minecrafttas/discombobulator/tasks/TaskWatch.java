@@ -7,10 +7,10 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
 
-public class TaskProcess extends DefaultTask {
+public class TaskWatch extends DefaultTask {
 
 	@TaskAction
-	public void preprocess() {
+	public void preprocessWatch() {
 		// Preprocessing is split into the following steps:
 		// - compare all files and figure out which one's are different
 		// - for all different files, figure out which one has the most recent modification date

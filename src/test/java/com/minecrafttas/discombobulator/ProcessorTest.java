@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ProcessorTest {
@@ -112,5 +112,34 @@ class ProcessorTest {
 	    });
 	    
 	    assertEquals(exception.getMessage(), "The specified version 1.18.1 in TestFile1 in line 4 was not found");
+	}
+	
+	//======================= Testfile2
+	
+	@Disabled("Unimplemented")
+	@Test
+	void testPreprocess2First() throws Exception {
+		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile2.java"), StandardCharsets.UTF_8);
+		
+		List<String> actual = Processor.preprocess("1.18.1", allVersions, lines, "TestFile1");
+		
+		List<String> expected =List.of("package resources.testfiles;"
+				,""
+				,"public class TestFile2 {"
+				,"	//# 1.18.1"
+				,"	// Code for 1.18.1 and up"
+				,"	//# 1.16.1"
+				,"	// Code for 1.16.1 and up"
+				,"	//# end"
+				,"	"
+				,"	"
+				,"	// Stuff that shouldn't be changed"
+				,"	"
+				,"	//# 1.17.1"
+				,"	// Another code part"
+				,"	//# 1.16.1"
+				,"	// Weee"
+				,"}");
+		assertEquals(expected, actual);
 	}
 }
