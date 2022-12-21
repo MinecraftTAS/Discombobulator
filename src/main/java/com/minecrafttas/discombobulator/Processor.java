@@ -131,9 +131,6 @@ public class Processor {
 		if (currentVer == -1)
 			throw new RuntimeException(String.format("The specified version %s in %s in line %s was not found", currentVersion, filename, line));
 
-		if (targetVer == -1)
-			throw new RuntimeException(String.format("The specified version %s was not found in the list of all versions", targetVersion));
-
 		if (targetVer > currentVer)
 			return false;
 
