@@ -14,6 +14,8 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static PreprocessingConfiguration config;
 
+	public static Processor processor;
+
 	/**
 	 * Apply the gradle plugin to the project
 	 */
@@ -21,8 +23,15 @@ public class Discombobulator implements Plugin<Project> {
 	public void apply(Project project) {
 		// Make buildscript extension for preprocessor
 		config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
+		// Create Processor
+		processor = new Processor();
 		// Register synchronization task
 		project.getTasks().register("process", TaskWatch.class).get().setGroup("dicombobulator");
+
+		project.afterEvaluate(_project -> {
+			// Initialize Processor
+			processor.initialize(config.getVersions().get(), config.getPatterns().get());
+		});
 	}
 
 }
