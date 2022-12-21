@@ -4,7 +4,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
-import com.minecrafttas.discombobulator.tasks.TaskWatch;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 
 /**
  * Gradle plugin main class
@@ -25,8 +26,9 @@ public class Discombobulator implements Plugin<Project> {
 		config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
 		// Create Processor
 		processor = new Processor();
-		// Register synchronization task
-		project.getTasks().register("process", TaskWatch.class).get().setGroup("dicombobulator");
+		// Register tasks
+		project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get().setGroup("dicombobulator");
+		project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get().setGroup("dicombobulator");
 
 		project.afterEvaluate(_project -> {
 			// Initialize Processor
