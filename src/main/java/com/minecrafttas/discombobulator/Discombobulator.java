@@ -13,6 +13,8 @@ import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
  */
 public class Discombobulator implements Plugin<Project> {
 
+	public static final int PORT_LOCK = 8762;
+
 	public static PreprocessingConfiguration config;
 
 	public static Processor processor;
