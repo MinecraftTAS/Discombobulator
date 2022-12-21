@@ -8,19 +8,35 @@ import java.util.regex.Pattern;
 public class Processor {
 
 	private Pattern regex;
+
 	private List<String> versions;
 	@SuppressWarnings("unused") // TODO: Implement patterns
 	private Map<String, Map<String, String>> patterns;
 
+	/**
+	 * Creates a preprocessor and initializes the regex
+	 */
 	public Processor() {
 		this.regex = Pattern.compile("\\/\\/ *# (.+)");
 	}
 
+	/**
+	 * Initializes the preprocessor with a list of versions and patterns
+	 * @param versions List of versions
+	 * @param patterns Map of patterns
+	 */
 	public void initialize(List<String> versions, Map<String, Map<String, String>> patterns) {
 		this.versions = versions;
 		this.patterns = patterns;
 	}
 
+	/**
+	 * Preprocesses the given lines to targetVersion
+	 * @param targetVersion Preprocess target
+	 * @param lines Lines to preprocess
+	 * @param filename Filename
+	 * @return Preprocessed Lines
+	 */
 	public List<String> preprocess(String targetVersion, List<String> lines, String filename) {
 		// Specific version for current line or null
 		String currentVersion = null;
@@ -91,6 +107,14 @@ public class Processor {
 	 */
 	private boolean perfectMatch = false;
 
+	/**
+	 * Returns whether version specific code should be enabled on the target version or not
+	 * @param targetVersion Target version
+	 * @param currentVersion Version of the version specific code
+	 * @param filename Filename
+	 * @param line Current line in the file
+	 * @return Is version enabled?
+	 */
 	private boolean isVersionEnabled(String targetVersion, String currentVersion, String filename, int line) {
 		var targetVer = -1;
 		var currentVer = -1;
