@@ -1,4 +1,5 @@
 package com.minecrafttas.discombobulator.utils;
+
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -49,10 +50,17 @@ public abstract class FileWatcher {
 			// @formatter:on
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				FileWatcher.this.watchKeys.put(dir, dir.register(FileWatcher.this.service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE));
+				FileWatcher.this.watchKeys.put(dir.toAbsolutePath(), dir.register(FileWatcher.this.service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE));
 				return FileVisitResult.CONTINUE;
 			}
 		});
+	}
+
+	public String getKeyByValue(Map<String, WatchKey> map, WatchKey value) {
+		for (Map.Entry<String, WatchKey> entry : map.entrySet())
+			if (value.equals(entry.getValue()))
+				return entry.getKey();
+		return null;
 	}
 
 	/**
@@ -64,16 +72,25 @@ public abstract class FileWatcher {
 		// Watch for file system events
 		WatchKey key;
 		while ((key = this.service.take()) != null) {
+			Thread.sleep(400); // prevent multiple writes
 			for (var event : key.pollEvents()) {
-				// Trigger events for file system events
-				var path = this.rootDir.resolve((Path) event.context());
+				// Find directory of event in the most inefficient way ever.
+				Path parent = null;
+				for (Map.Entry<Path, WatchKey> entry : this.watchKeys.entrySet())
+					if (key.equals(entry.getValue()))
+						parent = entry.getKey();
 
-				if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE)
+				// Trigger events for file system events
+				var path = parent.resolve((Path) event.context()).toAbsolutePath();
+				if (!Files.isDirectory(path) && path.toFile().length() <= 0 && event.kind() != StandardWatchEventKinds.ENTRY_DELETE)
+					continue;
+
+				if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
 					if (this.watchKeys.containsKey(path))
 						this.deleteDirectory(path);
 					else
 						this.onDeleteFile(path);
-				else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+				} else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
 					if (Files.isDirectory(path))
 						this.newDirectory(path);
 					else
@@ -83,6 +100,17 @@ public abstract class FileWatcher {
 						this.onModifyFile(path);
 			}
 			key.reset();
+		}
+	}
+
+	/**
+	 * Closes the file watcher
+	 */
+	public final void close() {
+		try {
+			this.service.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
