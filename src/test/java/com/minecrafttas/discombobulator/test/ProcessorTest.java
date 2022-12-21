@@ -1,145 +1,121 @@
-package com.minecrafttas.discombobulator;
+package com.minecrafttas.discombobulator.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.minecrafttas.discombobulator.Processor;
+
 class ProcessorTest {
-	
-	String[] allVersions= {
-			"1.20.0",
-			"1.19.3",
-			"1.19.2",
-			"1.19.0",
-			"1.18.2",
-			"1.18.1",
-			"1.17.1",
-			"1.16.5",
-			"1.16.1",
-			"infinity",
-			"1.15.2",
-			"1.14.4"
-			};
+
+	// @formatter:off
+	List<String> allVersions = Arrays.asList(
+		"1.20.0",
+		"1.19.3",
+		"1.19.2",
+		"1.19.0",
+		"1.18.2",
+		"1.18.1",
+		"1.17.1",
+		"1.16.5",
+		"1.16.1",
+		"infinity",
+		"1.15.2",
+		"1.14.4"
+	);
+	// @formatter:on
 
 	@Test
 	void testPreprocessFirst() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile1.java"), StandardCharsets.UTF_8);
-		
-		List<String> actual = Processor.preprocess("1.18.1", allVersions, lines, "TestFile1");
-		
-		List<String> expected =List.of("package resources.testfiles;"
-				, ""
-				,"public class TestFile1 {"
-				,"	//# 1.18.1"
-				,"	// Code for 1.18.1 and up"
-				,"	//# 1.16.1"
-				,"//$$	// Code for 1.16.1 and up"
-				,"	//# end"
-				,"}");
+		var processor = new Processor();
+		processor.initialize(this.allVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile1.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("1.18.1", lines, "TestFile1");
+
+		List<String> expected = List.of("public class TestFile1 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "//$$	// Code for 1.16.1 and up", "	//# end", "}");
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	void testPreprocessSecond() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile1.java"), StandardCharsets.UTF_8);
-		
-		List<String> actual = Processor.preprocess("1.16.1", allVersions, lines, "TestFile1");
-		
-		List<String> expected =List.of("package resources.testfiles;"
-				, ""
-				,"public class TestFile1 {"
-				,"	//# 1.18.1"
-				,"//$$	// Code for 1.18.1 and up"
-				,"	//# 1.16.1"
-				,"	// Code for 1.16.1 and up"
-				,"	//# end"
-				,"}");
+		var processor = new Processor();
+		processor.initialize(this.allVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile1.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("1.16.1", lines, "TestFile1");
+
+		List<String> expected = List.of("public class TestFile1 {", "	//# 1.18.1", "//$$	// Code for 1.18.1 and up", "	//# 1.16.1", "	// Code for 1.16.1 and up", "	//# end", "}");
 		assertEquals(expected, actual);
 	}
 
 	@Test
 	void testPreprocessTooNew() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile1.java"), StandardCharsets.UTF_8);
-		
-		List<String> actual = Processor.preprocess("1.19.2", allVersions, lines, "TestFile1");
-		
-		List<String> expected =List.of("package resources.testfiles;"
-				, ""
-				,"public class TestFile1 {"
-				,"	//# 1.18.1"
-				,"	// Code for 1.18.1 and up"
-				,"	//# 1.16.1"
-				,"//$$	// Code for 1.16.1 and up"
-				,"	//# end"
-				,"}");
+		var processor = new Processor();
+		processor.initialize(this.allVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile1.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("1.19.2", lines, "TestFile1");
+
+		List<String> expected = List.of("public class TestFile1 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "//$$	// Code for 1.16.1 and up", "	//# end", "}");
 		assertEquals(expected, actual);
 	}
 
 	@Test
 	void testPreprocessTooOld() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile1.java"), StandardCharsets.UTF_8);
-		
-		List<String> actual = Processor.preprocess("infinity", allVersions, lines, "TestFile1");
-		
-		List<String> expected =List.of("package resources.testfiles;"
-				, ""
-				,"public class TestFile1 {"
-				,"	//# 1.18.1"
-				,"//$$	// Code for 1.18.1 and up"
-				,"	//# 1.16.1"
-				,"//$$	// Code for 1.16.1 and up"
-				,"	//# end"
-				,"}");
+		var processor = new Processor();
+		processor.initialize(this.allVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile1.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("infinity", lines, "TestFile1");
+
+		List<String> expected = List.of("public class TestFile1 {", "	//# 1.18.1", "//$$	// Code for 1.18.1 and up", "	//# 1.16.1", "//$$	// Code for 1.16.1 and up", "	//# end", "}");
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	void testPreprocessFail() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile1.java"), StandardCharsets.UTF_8);
-		
-		String[] removed = allVersions.clone();
-		
-		removed[5]="";
-		
-	    Exception exception = assertThrows(Exception.class, () -> {
-	    	Processor.preprocess("1.16.1", removed, lines, "TestFile1");
-	    });
-	    
-	    assertEquals(exception.getMessage(), "The specified version 1.18.1 in TestFile1 in line 4 was not found");
+		List<String> notQuiteAllVersions = new ArrayList<>(this.allVersions);
+		notQuiteAllVersions.remove(5);
+
+		var processor = new Processor();
+		processor.initialize(notQuiteAllVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile1.java"), StandardCharsets.UTF_8);
+
+		var exception = assertThrows(RuntimeException.class, () -> {
+			processor.preprocess("1.16.1", lines, "TestFile1");
+		});
+
+		assertEquals(exception.getMessage(), "The specified version 1.18.1 in TestFile1 in line 2 was not found");
 	}
-	
-	//======================= Testfile2
-	
+
+	// TESTS FOR TestFile2.java
+
 	@Disabled("Unimplemented")
 	@Test
 	void testPreprocess2First() throws Exception {
-		List<String> lines = FileUtils.readLines(new File("src/test/java/resources/testfiles/TestFile2.java"), StandardCharsets.UTF_8);
-		
-		List<String> actual = Processor.preprocess("1.18.1", allVersions, lines, "TestFile1");
-		
-		List<String> expected =List.of("package resources.testfiles;"
-				,""
-				,"public class TestFile2 {"
-				,"	//# 1.18.1"
-				,"	// Code for 1.18.1 and up"
-				,"	//# 1.16.1"
-				,"	// Code for 1.16.1 and up"
-				,"	//# end"
-				,"	"
-				,"	"
-				,"	// Stuff that shouldn't be changed"
-				,"	"
-				,"	//# 1.17.1"
-				,"	// Another code part"
-				,"	//# 1.16.1"
-				,"	// Weee"
-				,"}");
+		var processor = new Processor();
+		processor.initialize(this.allVersions, null);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile2.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("1.18.1", lines, "TestFile1");
+
+		List<String> expected = List.of("", "public class TestFile2 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "	// Code for 1.16.1 and up", "	//# end", "	", "	", "	// Stuff that shouldn't be changed", "	", "	//# 1.17.1", "	// Another code part", "	//# 1.16.1", "	// Weee", "}");
 		assertEquals(expected, actual);
 	}
 }
