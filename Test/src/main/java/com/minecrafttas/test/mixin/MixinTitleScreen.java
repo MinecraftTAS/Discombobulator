@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //# 1.14.4
-import net.minecraft.client.gui.Font;
+//$$import net.minecraft.client.gui.Font;
 //$$import net.minecraft.client.gui.screens.TitleScreen;
 //$$
 //$$@Mixin(TitleScreen.class)
@@ -18,7 +18,7 @@ import net.minecraft.client.gui.Font;
 public class MixinTitleScreen {
 
 	//# 1.14.4
-	@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
+//$$	@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
 //$$	public void onDraw(TitleScreen g, Font font, String string, int i, int j, int k) {
 	//# 1.12.2
 //$$	@Redirect(method = "drawScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiMainMenu;drawString(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;III)V"))

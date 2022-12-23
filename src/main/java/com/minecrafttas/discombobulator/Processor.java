@@ -60,7 +60,7 @@ public class Processor {
 
 			// Change lines accordingly
 			if (currentVersion != null) {
-				if (this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line))) {
+				if (this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) && targetVersion != null) {
 					var changedLine = line;
 					if (line.startsWith("//$$"))
 						changedLine = line.replace("//$$", "");
