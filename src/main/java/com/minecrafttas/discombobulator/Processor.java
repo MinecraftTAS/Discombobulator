@@ -127,6 +127,8 @@ public class Processor {
 			if (version.equals(currentVersion))
 				currentVer = i;
 		}
+		if ("def".equals(currentVersion))
+			currentVer = this.versions.size() - 1;
 
 		if (currentVer == -1)
 			throw new RuntimeException(String.format("The specified version %s in %s in line %s was not found", currentVersion, filename, line));
