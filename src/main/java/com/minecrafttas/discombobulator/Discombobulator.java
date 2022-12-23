@@ -29,9 +29,14 @@ public class Discombobulator implements Plugin<Project> {
 		// Create Processor
 		processor = new Processor();
 		// Register tasks
-		project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get().setGroup("dicombobulator");
-		project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get().setGroup("dicombobulator");
-
+		TaskPreprocessBase baseTask = project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get();
+		baseTask.setGroup("dicombobulator");
+		baseTask.setDescription("Split base source into seperate version folders");
+		
+		TaskPreprocessWatch watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get();
+		watchTask.setGroup("dicombobulator");
+		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
+		
 		project.afterEvaluate(_project -> {
 			// Initialize Processor
 			processor.initialize(config.getVersions().get(), config.getPatterns().get());

@@ -26,6 +26,7 @@ public class SocketLock {
 	 */
 	public SocketLock(int port) {
 		this.port = port;
+		System.out.println(String.format("Locking Port %s", port));
 		try {
 			this.socket = new ServerSocket();
 		} catch (IOException e) {
