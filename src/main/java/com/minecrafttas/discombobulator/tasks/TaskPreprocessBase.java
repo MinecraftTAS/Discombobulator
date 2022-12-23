@@ -53,7 +53,7 @@ public class TaskPreprocessBase extends DefaultTask {
 
 					// Write file and update last modified date
 					Files.createDirectories(outFile.getParent());
-					Files.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 					Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(inFile));
 				}
 			} catch (IOException e) {
