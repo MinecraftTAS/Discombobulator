@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Disabled;
@@ -31,6 +32,17 @@ class ProcessorTest {
 		"infinity",
 		"1.15.2",
 		"1.14.4"
+	);
+
+	Map<String, Map<String, String>> patterns = Map.of(
+		"GetLevel", Map.of(
+			"1.14.4", "Level level = mc.level",
+			"1.12.2", "World level = mc.world"
+		),
+		"GetMinecraft", Map.of(
+			"1.14.4", "Minecraft.getInstance()",
+			"1.12.2", "Minecraft.getMinecraft()"
+		)
 	);
 	// @formatter:on
 
@@ -113,9 +125,24 @@ class ProcessorTest {
 
 		var lines = FileUtils.readLines(new File("src/test/resources/TestFile2.java"), StandardCharsets.UTF_8);
 
-		var actual = processor.preprocess("1.18.1", lines, "TestFile1");
+		var actual = processor.preprocess("1.18.1", lines, "TestFile2");
 
-		List<String> expected = List.of("", "public class TestFile2 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "	// Code for 1.16.1 and up", "	//# end", "	", "	", "	// Stuff that shouldn't be changed", "	", "	//# 1.17.1", "	// Another code part", "	//# 1.16.1", "	// Weee", "}");
+		List<String> expected = List.of("public class TestFile2 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "	// Code for 1.16.1 and up", "	//# end", "	", "	", "	// Stuff that shouldn't be changed", "	", "	//# 1.17.1", "	// Another code part", "	//# 1.16.1", "	// Weee", "}");
 		assertEquals(expected, actual);
 	}
+
+	// TESTS FOR TestFile3.java
+	@Test
+	void testPreprocess3Pattern() throws Exception {
+		var processor = new Processor();
+		processor.initialize(this.allVersions, this.patterns);
+
+		var lines = FileUtils.readLines(new File("src/test/resources/TestFile3.java"), StandardCharsets.UTF_8);
+
+		var actual = processor.preprocess("1.14.4", lines, "TestFile3");
+
+		List<String> expected = List.of("public class TestFile3 {", "	//	Minecraft mc = Minecraft.getInstance(); // @GetMinecraft", "	//	Level level = mc.level; // @GetLevel", "}");
+		assertEquals(expected, actual);
+	}
+
 }

@@ -3,21 +3,23 @@ package com.minecrafttas.discombobulator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class Processor {
 
-	private Pattern regex;
+	private Pattern regexBlocks;
+	private Pattern regexPatterns;
 
 	private List<String> versions;
-	@SuppressWarnings("unused") // TODO: Implement patterns
 	private Map<String, Map<String, String>> patterns;
 
 	/**
 	 * Creates a preprocessor and initializes the regex
 	 */
 	public Processor() {
-		this.regex = Pattern.compile("\\/\\/ *# (.+)");
+		this.regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
+		this.regexPatterns = Pattern.compile("\\/\\/ *@(.+)");
 	}
 
 	/**
@@ -41,12 +43,12 @@ public class Processor {
 		// Specific version for current line or null
 		String currentVersion = null;
 
-		List<String> out = new ArrayList<>();
+		List<String> blocks = new ArrayList<>();
 
 		// Switch version blocks
 		for (String line : lines) {
 			// Pattern detection
-			var match = this.regex.matcher(line);
+			var match = this.regexBlocks.matcher(line);
 			if (match.find()) {
 				var ver = currentVersion = match.group(1);
 				if (ver.equalsIgnoreCase("end")) {
@@ -54,7 +56,7 @@ public class Processor {
 					this.overflow = false;
 					this.perfectMatch = false;
 				}
-				out.add(line);
+				blocks.add(line);
 				continue;
 			}
 
@@ -65,18 +67,49 @@ public class Processor {
 					if (line.startsWith("//$$"))
 						changedLine = line.replace("//$$", "");
 
-					out.add(changedLine);
+					blocks.add(changedLine);
 				} else {
 					var changedLine = line;
 					if (!line.startsWith("//$$"))
 						changedLine = "//$$" + line;
 
-					out.add(changedLine);
+					blocks.add(changedLine);
 				}
+				continue;
+			}
+			blocks.add(line);
+		}
+
+		List<String> out = new ArrayList<>();
+
+		// Apply patterns
+		for (String line : blocks) {
+			var match = this.regexPatterns.matcher(line);
+			if (match.find()) {
+				// find pattern
+				var type = match.group(1);
+				var pattern = this.patterns.get(type);
+				if (pattern == null)
+					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", type, filename, line));
+				// find current version
+				String toReplace = null;
+				for (Entry<String, String> entry : pattern.entrySet())
+					if (line.contains(entry.getValue())) {
+						toReplace = entry.getValue();
+						break;
+					}
+				if (toReplace == null)
+					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", type, filename, line));
+				// find replacement
+				var toReplaceWith = pattern.get(targetVersion);
+				if (toReplaceWith == null)
+					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", type, filename, line, targetVersion));
+				out.add(line.replace(toReplace, toReplaceWith));
 				continue;
 			}
 			out.add(line);
 		}
+
 		return out;
 	}
 
