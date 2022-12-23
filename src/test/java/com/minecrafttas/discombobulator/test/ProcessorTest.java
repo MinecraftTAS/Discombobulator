@@ -115,22 +115,6 @@ class ProcessorTest {
 		assertEquals(exception.getMessage(), "The specified version 1.18.1 in TestFile1 in line 2 was not found");
 	}
 
-	// TESTS FOR TestFile2.java
-
-	@Disabled("Unimplemented")
-	@Test
-	void testPreprocess2First() throws Exception {
-		var processor = new Processor();
-		processor.initialize(this.allVersions, null);
-
-		var lines = FileUtils.readLines(new File("src/test/resources/TestFile2.java"), StandardCharsets.UTF_8);
-
-		var actual = processor.preprocess("1.18.1", lines, "TestFile2");
-
-		List<String> expected = List.of("public class TestFile2 {", "	//# 1.18.1", "	// Code for 1.18.1 and up", "	//# 1.16.1", "	// Code for 1.16.1 and up", "	//# end", "	", "	", "	// Stuff that shouldn't be changed", "	", "	//# 1.17.1", "	// Another code part", "	//# 1.16.1", "	// Weee", "}");
-		assertEquals(expected, actual);
-	}
-
 	// TESTS FOR TestFile3.java
 	@Test
 	void testPreprocess3Pattern() throws Exception {
