@@ -42,7 +42,8 @@ public class Processor {
 	public List<String> preprocess(String targetVersion, List<String> lines, String filename) {
 		// Specific version for current line or null
 		String currentVersion = null;
-
+		int master = -1;
+		
 		List<String> blocks = new ArrayList<>();
 
 		// Switch version blocks
@@ -51,6 +52,7 @@ public class Processor {
 			var match = this.regexBlocks.matcher(line);
 			if (match.find()) {
 				var ver = currentVersion = match.group(1);
+				master = -1;
 				if (ver.equalsIgnoreCase("end")) {
 					currentVersion = null;
 					this.overflow = false;
@@ -62,7 +64,10 @@ public class Processor {
 
 			// Change lines accordingly
 			if (currentVersion != null) {
-				if (this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) && targetVersion != null) {
+				if (master == -1) {
+					master = this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) ? 2 : 1;
+				}
+				if (master == 2 && targetVersion != null) {
 					var changedLine = line;
 					if (line.startsWith("//$$"))
 						changedLine = line.replace("//$$", "");
