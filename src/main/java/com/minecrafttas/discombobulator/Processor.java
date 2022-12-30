@@ -101,7 +101,7 @@ public class Processor {
 				if (toReplace == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", type, filename, line));
 				// find replacement
-				var toReplaceWith = pattern.get(targetVersion);
+				var toReplaceWith = findLowestReplacement(pattern, targetVersion);
 				if (toReplaceWith == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", type, filename, line, targetVersion));
 				out.add(line.replace(toReplace, toReplaceWith));
@@ -111,6 +111,29 @@ public class Processor {
 		}
 
 		return out;
+	}
+
+	/**
+	 * Finds the lowest pattern replacement for any target version
+	 * @param pattern Pattern
+	 * @param targetVersion Target version
+	 * @return Replacement
+	 */
+	private String findLowestReplacement(Map<String, String> pattern, String targetVersion) {
+		String replacement = null;
+		int targetVer = this.versions.indexOf(targetVersion);
+		
+		// Find index of target version
+		for (Entry<String, String> entry : pattern.entrySet()) {
+			int i = this.versions.indexOf(entry.getKey());
+			System.out.println(targetVer + "," + targetVersion + "," + i);
+			// Break if version too high
+			if (targetVer > i)
+				break;
+			
+			replacement = entry.getValue();
+		}
+		return replacement;
 	}
 
 	/**
