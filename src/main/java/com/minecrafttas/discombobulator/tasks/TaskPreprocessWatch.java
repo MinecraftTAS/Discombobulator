@@ -27,7 +27,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	private List<Thread> threads = new ArrayList<>();
 
-	private Map<String, Long> timeout = new HashMap<>();
+	private long timeout = -1;
 
 	@TaskAction
 	public void preprocessWatch() {
@@ -76,13 +76,12 @@ public class TaskPreprocessWatch extends DefaultTask {
 					@Override
 					protected void onModifyFile(Path path) {
 						var filename = path.getFileName().toString();
-						if (TaskPreprocessWatch.this.timeout.containsKey(filename)) {
-							long time = TaskPreprocessWatch.this.timeout.get(filename);
-							var passed = System.currentTimeMillis() - time;
-							if (passed <= 1000)
-								return;
-						}
-						TaskPreprocessWatch.this.timeout.put(filename, System.currentTimeMillis());
+						
+						var passed = System.currentTimeMillis() - timeout;
+						timeout += 100;
+						if (passed <= 1000)
+							return;
+						timeout = System.currentTimeMillis();
 
 						var relativeFile = file.relativize(path);
 						try {
