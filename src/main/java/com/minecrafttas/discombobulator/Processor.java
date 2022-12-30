@@ -42,7 +42,8 @@ public class Processor {
 	public List<String> preprocess(String targetVersion, List<String> lines, String filename) {
 		// Specific version for current line or null
 		String currentVersion = null;
-
+		int master = -1;
+		
 		List<String> blocks = new ArrayList<>();
 
 		// Switch version blocks
@@ -51,6 +52,7 @@ public class Processor {
 			var match = this.regexBlocks.matcher(line);
 			if (match.find()) {
 				var ver = currentVersion = match.group(1);
+				master = -1;
 				if (ver.equalsIgnoreCase("end")) {
 					currentVersion = null;
 					this.overflow = false;
@@ -62,7 +64,10 @@ public class Processor {
 
 			// Change lines accordingly
 			if (currentVersion != null) {
-				if (this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) && targetVersion != null) {
+				if (master == -1) {
+					master = this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) ? 2 : 1;
+				}
+				if (master == 2 && targetVersion != null) {
 					var changedLine = line;
 					if (line.startsWith("//$$"))
 						changedLine = line.replace("//$$", "");
@@ -101,7 +106,7 @@ public class Processor {
 				if (toReplace == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", type, filename, line));
 				// find replacement
-				var toReplaceWith = pattern.get(targetVersion);
+				var toReplaceWith = findLowestReplacement(pattern, targetVersion);
 				if (toReplaceWith == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", type, filename, line, targetVersion));
 				out.add(line.replace(toReplace, toReplaceWith));
@@ -111,6 +116,32 @@ public class Processor {
 		}
 
 		return out;
+	}
+
+	/**
+	 * Finds the lowest pattern replacement for any target version
+	 * @param pattern Pattern
+	 * @param targetVersion Target version
+	 * @return Replacement
+	 */
+	private String findLowestReplacement(Map<String, String> pattern, String targetVersion) {
+		String replacement = null;
+		int targetVer = this.versions.indexOf(targetVersion);
+		
+		// Find index of target version
+		for (Entry<String, String> entry : pattern.entrySet()) {
+			int i = this.versions.indexOf(entry.getKey());
+			if ("def".equals(entry.getKey())) {
+				i = this.versions.size() - 1;
+			}
+			
+			// Break if version too high
+			if (targetVer > i)
+				break;
+			
+			replacement = entry.getValue();
+		}
+		return replacement;
 	}
 
 	/**

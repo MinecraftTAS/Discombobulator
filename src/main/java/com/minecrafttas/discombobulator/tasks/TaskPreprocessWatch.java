@@ -27,7 +27,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	private List<Thread> threads = new ArrayList<>();
 
-	private Map<String, Long> timeout = new HashMap<>();
+	private long timeout = -1;
 
 	@TaskAction
 	public void preprocessWatch() {
@@ -76,13 +76,12 @@ public class TaskPreprocessWatch extends DefaultTask {
 					@Override
 					protected void onModifyFile(Path path) {
 						var filename = path.getFileName().toString();
-						if (TaskPreprocessWatch.this.timeout.containsKey(filename)) {
-							long time = TaskPreprocessWatch.this.timeout.get(filename);
-							var passed = System.currentTimeMillis() - time;
-							if (passed <= 1000)
-								return;
-						}
-						TaskPreprocessWatch.this.timeout.put(filename, System.currentTimeMillis());
+						
+						var passed = System.currentTimeMillis() - timeout;
+						timeout += 100;
+						if (passed <= 1000)
+							return;
+						timeout = System.currentTimeMillis();
 
 						var relativeFile = file.relativize(path);
 						try {
@@ -92,11 +91,17 @@ public class TaskPreprocessWatch extends DefaultTask {
 								if (subVersion.getKey().equals(version))
 									continue;
 								var lines = Discombobulator.processor.preprocess(subVersion.getKey(), inLines, filename);
-								SafeFileOperations.write(subVersion.getValue().resolve(relativeFile), lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+								var outFile = subVersion.getValue().resolve(relativeFile);
+								Files.createDirectories(outFile.getParent());
+								SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+								Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 							}
 							// Modify this file in base project
 							var lines = Discombobulator.processor.preprocess(null, inLines, filename);
-							SafeFileOperations.write(new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile), lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+							var outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
+							Files.createDirectories(outFile.getParent());
+							SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+							Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 							System.out.println("Processed " + path.getFileName());
 						} catch (IOException e) {
 							e.printStackTrace();
