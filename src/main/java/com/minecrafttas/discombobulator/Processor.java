@@ -129,7 +129,7 @@ public class Processor {
 			if ("def".equals(entry.getKey())) {
 				i = this.versions.size() - 1;
 			}
-			System.out.println(targetVer + "," + targetVersion + "," + i);
+			
 			// Break if version too high
 			if (targetVer > i)
 				break;
