@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.minecrafttas.discombobulator.Processor;
