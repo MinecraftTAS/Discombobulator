@@ -126,6 +126,9 @@ public class Processor {
 		// Find index of target version
 		for (Entry<String, String> entry : pattern.entrySet()) {
 			int i = this.versions.indexOf(entry.getKey());
+			if ("def".equals(entry.getKey())) {
+				i = this.versions.size() - 1;
+			}
 			System.out.println(targetVer + "," + targetVersion + "," + i);
 			// Break if version too high
 			if (targetVer > i)
