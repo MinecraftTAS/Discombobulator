@@ -1,5 +1,6 @@
 package com.minecrafttas.discombobulator.extensions;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gradle.api.provider.ListProperty;
@@ -22,7 +23,7 @@ public abstract class PreprocessingConfiguration {
 	 * </pre>
 	 * @return Ordered list of versions
 	 */
-	public abstract ListProperty<String> getVersions();
+	public abstract ListProperty<Map<String, String>> getVersions();
 	
 	/**
 	 * All patterns for the project.
@@ -40,5 +41,4 @@ public abstract class PreprocessingConfiguration {
 	 * @return Map of patterns
 	 */
 	public abstract MapProperty<String, Map<String, String>> getPatterns();
-
 }

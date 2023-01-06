@@ -1,5 +1,10 @@
 package com.minecrafttas.discombobulator;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -38,8 +43,17 @@ public class Discombobulator implements Plugin<Project> {
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
 		
 		project.afterEvaluate(_project -> {
+			List<String> versions =  new ArrayList<>();
 			// Initialize Processor
-			processor.initialize(config.getVersions().get(), config.getPatterns().get());
+			List<Map<String, String>> mapsnpaths = config.getVersions().get();
+			for(Map<String, String> ver : mapsnpaths) {
+				Set<String> keys = ver.keySet();
+				for(String key : keys) {
+					versions.add(key);
+					break;
+				}
+			}
+			processor.initialize(versions, config.getPatterns().get());
 		});
 	}
 
