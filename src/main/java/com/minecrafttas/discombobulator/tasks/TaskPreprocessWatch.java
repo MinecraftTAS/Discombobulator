@@ -16,6 +16,8 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.utils.FileWatcher;
+import com.minecrafttas.discombobulator.utils.MapPair;
+import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 import com.minecrafttas.discombobulator.utils.SocketLock;
 
@@ -35,14 +37,21 @@ public class TaskPreprocessWatch extends DefaultTask {
 		var lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 
-		// Start a filewatcher thread for every physical version folder
-		Map<String, Path> versions = new HashMap<>();
-		for (File subDir : this.getProject().getProjectDir().listFiles())
-			if (new File(subDir, "build.gradle").exists())
-				versions.put(subDir.getName(), new File(subDir, "src").toPath().toAbsolutePath());
-
-		for (Entry<String, Path> version : versions.entrySet())
-			this.watch(version.getValue(), versions);
+		// Prepare list of physical version folders
+		List<Map<String, String>> versionsConfig = Discombobulator.config.getVersions().get();
+		
+		List<Pair<String, Path>> versions = new ArrayList<>();
+		
+		for (Map<String, String> version : versionsConfig) {
+			String path = MapPair.getRight(version);
+			if(new File(path, "build.gradle").exists()) {
+				String ver = MapPair.getLeft(version);
+				versions.add(Pair.of(ver, new File(path).toPath().toAbsolutePath()));
+			}
+		}
+		
+		for (Pair<String, Path> version : versions)
+			this.watch(version.right(), versions);
 
 		// Wait for user input and cancel the task
 		try {
@@ -61,11 +70,12 @@ public class TaskPreprocessWatch extends DefaultTask {
 	 * @param file Source folder
 	 * @param versions Map of versions
 	 */
-	private void watch(Path file, Map<String, Path> versions) {
+	private void watch(Path file, List<Pair<String, Path>> versions) {
 		var thread = new Thread(() -> {
 			var version = file.getParent().getFileName().toString();
 			FileWatcher watcher = null;
 			try {
+				
 				watcher = new FileWatcher(file) {
 
 					@Override
@@ -75,30 +85,30 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 					@Override
 					protected void onModifyFile(Path path) {
-						var filename = path.getFileName().toString();
+						String filename = path.getFileName().toString();
 						
-						var passed = System.currentTimeMillis() - timeout;
+						long passed = System.currentTimeMillis() - timeout;
 						timeout += 100;
 						if (passed <= 1000)
 							return;
 						timeout = System.currentTimeMillis();
 
-						var relativeFile = file.relativize(path);
+						Path relativeFile = file.relativize(path);
 						try {
 							// Modify this file in other versions too
-							var inLines = Files.readAllLines(path);
+							List<String> inLines = Files.readAllLines(path);
 							for (Entry<String, Path> subVersion : versions.entrySet()) {
 								if (subVersion.getKey().equals(version))
 									continue;
-								var lines = Discombobulator.processor.preprocess(subVersion.getKey(), inLines, filename);
-								var outFile = subVersion.getValue().resolve(relativeFile);
+								List<String> lines = Discombobulator.processor.preprocess(subVersion.getKey(), inLines, filename);
+								Path outFile = subVersion.getValue().resolve(relativeFile);
 								Files.createDirectories(outFile.getParent());
 								SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 								Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 							}
 							// Modify this file in base project
-							var lines = Discombobulator.processor.preprocess(null, inLines, filename);
-							var outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
+							List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename);
+							Path outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
 							Files.createDirectories(outFile.getParent());
 							SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 							Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
