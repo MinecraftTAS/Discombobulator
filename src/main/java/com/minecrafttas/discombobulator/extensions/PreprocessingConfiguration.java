@@ -1,6 +1,5 @@
 package com.minecrafttas.discombobulator.extensions;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gradle.api.provider.ListProperty;
@@ -18,7 +17,7 @@ public abstract class PreprocessingConfiguration {
 	 * versions = [
 	 * 	"1.14.4",
 	 * 	"1.12.2",
-	 * 	"1.8.9"
+	 * 	"1.8.9: AlternateFolderName1.8.9"
 	 * ]
 	 * </pre>
 	 * @return Ordered list of versions
