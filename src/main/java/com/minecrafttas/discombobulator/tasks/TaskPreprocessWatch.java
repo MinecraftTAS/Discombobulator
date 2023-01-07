@@ -38,15 +38,19 @@ public class TaskPreprocessWatch extends DefaultTask {
 		lock.tryLock();
 
 		// Prepare list of physical version folders
-		List<Map<String, String>> versionsConfig = Discombobulator.config.getVersions().get();
+		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
 		
 		List<Pair<String, Path>> versions = new ArrayList<>();
 		
-		for (Map<String, String> version : versionsConfig) {
-			String path = MapPair.getRight(version);
-			if(new File(path, "build.gradle").exists()) {
-				String ver = MapPair.getLeft(version);
-				versions.add(Pair.of(ver, new File(path).toPath().toAbsolutePath()));
+		for (Pair<String, String> versionConf : versionsConfig) {
+			String path = versionConf.right();
+			if(path == null) {
+				path = versionConf.left();
+			}
+			File rootDir = new File(this.getProject().getProjectDir() + File.separator + path);
+			if(new File(rootDir, "build.gradle").exists()) {
+				String ver = versionConf.left();
+				versions.add(Pair.of(ver, rootDir.toPath().toAbsolutePath()));
 			}
 		}
 		
@@ -85,23 +89,34 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 					@Override
 					protected void onModifyFile(Path path) {
+						// Get the filename that is getting prerprocessed
 						String filename = path.getFileName().toString();
 						
+						// Timeout
 						long passed = System.currentTimeMillis() - timeout;
 						timeout += 100;
 						if (passed <= 1000)
 							return;
 						timeout = System.currentTimeMillis();
 
+						// Get path relative to the root dir
 						Path relativeFile = file.relativize(path);
 						try {
 							// Modify this file in other versions too
+							
+							// Read the original file
 							List<String> inLines = Files.readAllLines(path);
-							for (Entry<String, Path> subVersion : versions.entrySet()) {
-								if (subVersion.getKey().equals(version))
+							
+							// Iterate through all versions
+							for (Pair<String, Path> subVersion : versions) {
+								// If the version equals the original version, then skip it
+								if (subVersion.left().equals(version))
 									continue;
-								List<String> lines = Discombobulator.processor.preprocess(subVersion.getKey(), inLines, filename);
-								Path outFile = subVersion.getValue().resolve(relativeFile);
+								// Preprocess the lines
+								List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename);
+								
+								// Write file
+								Path outFile = subVersion.right().resolve(relativeFile);
 								Files.createDirectories(outFile.getParent());
 								SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 								Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
@@ -122,10 +137,11 @@ public class TaskPreprocessWatch extends DefaultTask {
 					protected void onDeleteFile(Path path) {
 						var relativeFile = file.relativize(path);
 						// Delete this file in other versions too
-						for (Entry<String, Path> subVersion : versions.entrySet()) {
-							if (subVersion.getKey().equals(version))
+						// Iterate through all versions
+						for (Pair<String, Path> subVersion : versions) {
+							if (subVersion.left().equals(version))
 								continue;
-							SafeFileOperations.delete(subVersion.getValue().resolve(relativeFile).toFile());
+							SafeFileOperations.delete(subVersion.right().resolve(relativeFile).toFile());
 						}
 						// Delete this file in base project
 						SafeFileOperations.delete(new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile).toFile());
