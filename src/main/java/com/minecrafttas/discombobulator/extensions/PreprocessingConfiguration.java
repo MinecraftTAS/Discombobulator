@@ -23,7 +23,7 @@ public abstract class PreprocessingConfiguration {
 	 * </pre>
 	 * @return Ordered list of versions
 	 */
-	public abstract ListProperty<Map<String, String>> getVersions();
+	public abstract ListProperty<String> getVersions();
 	
 	/**
 	 * All patterns for the project.
