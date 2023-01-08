@@ -12,6 +12,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
+import com.minecrafttas.discombobulator.PathLock;
 import com.minecrafttas.discombobulator.utils.FileWatcher;
 import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
@@ -24,8 +25,6 @@ import com.minecrafttas.discombobulator.utils.SocketLock;
 public class TaskPreprocessWatch extends DefaultTask {
 
 	private List<Thread> threads = new ArrayList<>();
-
-	private long timeout = -1;
 
 	@TaskAction
 	public void preprocessWatch() {
@@ -87,13 +86,10 @@ public class TaskPreprocessWatch extends DefaultTask {
 					protected void onModifyFile(Path path) {
 						// Get the filename that is getting prerprocessed
 						String filename = path.getFileName().toString();
-						
-						// Timeout
-						long passed = System.currentTimeMillis() - timeout;
-						timeout += 100;
-						if (passed <= 1000)
+
+						PathLock schedule = Discombobulator.pathLock;
+						if (schedule.isLocked(path))
 							return;
-						timeout = System.currentTimeMillis();
 
 						// Get path relative to the root dir
 						Path relativeFile = file.relativize(path);
@@ -108,11 +104,14 @@ public class TaskPreprocessWatch extends DefaultTask {
 								// If the version equals the original version, then skip it
 								if (subVersion.left().equals(version))
 									continue;
+								
 								// Preprocess the lines
 								List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename);
 								
 								// Write file
 								Path outFile = subVersion.right().resolve(relativeFile);
+								
+								schedule.scheduleAndLock(outFile);
 								Files.createDirectories(outFile.getParent());
 								SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 								Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
