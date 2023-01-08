@@ -24,6 +24,8 @@ public class Discombobulator implements Plugin<Project> {
 	public static PreprocessingConfiguration config;
 
 	public static Processor processor;
+	
+	public static PathLock pathLock;
 
 	/**
 	 * Apply the gradle plugin to the project
@@ -34,6 +36,8 @@ public class Discombobulator implements Plugin<Project> {
 		config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
 		// Create Processor
 		processor = new Processor();
+		// Create schedule
+		pathLock = new PathLock();
 		// Register tasks
 		TaskPreprocessBase baseTask = project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get();
 		baseTask.setGroup("dicombobulator");
