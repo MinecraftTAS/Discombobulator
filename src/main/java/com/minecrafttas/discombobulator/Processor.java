@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Processor {
@@ -49,9 +50,9 @@ public class Processor {
 		// Switch version blocks
 		for (String line : lines) {
 			// Pattern detection
-			var match = this.regexBlocks.matcher(line);
+			Matcher match = this.regexBlocks.matcher(line);
 			if (match.find()) {
-				var ver = currentVersion = match.group(1);
+				String ver = currentVersion = match.group(1);
 				master = -1;
 				if (ver.equalsIgnoreCase("end")) {
 					currentVersion = null;
@@ -68,13 +69,13 @@ public class Processor {
 					master = this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) ? 2 : 1;
 				}
 				if (master == 2 && targetVersion != null) {
-					var changedLine = line;
+					String changedLine = line;
 					if (line.startsWith("//$$"))
 						changedLine = line.replace("//$$", "");
 
 					blocks.add(changedLine);
 				} else {
-					var changedLine = line;
+					String changedLine = line;
 					if (!line.startsWith("//$$"))
 						changedLine = "//$$" + line;
 
@@ -89,11 +90,11 @@ public class Processor {
 
 		// Apply patterns
 		for (String line : blocks) {
-			var match = this.regexPatterns.matcher(line);
+			Matcher match = this.regexPatterns.matcher(line);
 			if (match.find()) {
 				// find pattern
-				var type = match.group(1);
-				var pattern = this.patterns.get(type);
+				String type = match.group(1);
+				Map<String, String> pattern = this.patterns.get(type);
 				if (pattern == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", type, filename, line));
 				// find current version
@@ -106,7 +107,7 @@ public class Processor {
 				if (toReplace == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", type, filename, line));
 				// find replacement
-				var toReplaceWith = findLowestReplacement(pattern, targetVersion);
+				String toReplaceWith = findLowestReplacement(pattern, targetVersion);
 				if (toReplaceWith == null)
 					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", type, filename, line, targetVersion));
 				out.add(line.replace(toReplace, toReplaceWith));
