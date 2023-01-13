@@ -3,12 +3,13 @@ package com.minecrafttas.discombobulator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Processor2 {
 	private final Pattern regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
-	private final Pattern regexPatterns = Pattern.compile("\\/\\/ *@(.+)");
+	private final Pattern regexPatterns = Pattern.compile("\\/\\/ *@(.+);");
 	
 	private List<String> versions;
 	private Map<String, Map<String, String>> patterns;
@@ -113,10 +114,16 @@ public class Processor2 {
 	 * ]
 	 * </pre>
 	 * <p> Each pattern has a name and multiple versions, with a default under "def".<br>
-	 * To apply patterns, we have to write a <code>//@ patternname</code> in the line we want to apply:
+	 * To apply patterns, we have to write a <code>//@ patternname;</code> in the line we want to apply. Note that the pattern is terminated via semicolon.
 	 * 
 	 * <pre>
-	 * mc.window; // @GetWindow
+	 * mc.window; // @GetWindow;
+	 * </pre>
+	 * 
+	 * <p>We can also apply multiple patterns in one line, seperated via comma:
+	 * 
+	 * <pre>
+	 * Minecraft.getMinecraft().setWindow(mc.window); // @GetWindow,GetMinecraft;
 	 * </pre>
 	 * 
 	 * @param targetVersion The version for which lines should be enabled
@@ -132,7 +139,7 @@ public class Processor2 {
 		for (String line : lines) {
 			linecount++;
 			line = preprocessVersionBlock(line, targetVersion);
-			line = preprocessPattern(line);
+			line = preprocessPattern(line, targetVersion);
 			out.add(line);
 		}
 		
@@ -229,19 +236,63 @@ public class Processor2 {
 		return false;
 	}
 	
-	private String preprocessPattern(String line) {
+	private String preprocessPattern(String line, String targetVersion) {
 		Matcher match = this.regexPatterns.matcher(line);
 		if (!match.find()) {
 			return line;
 		}
 		
 		// find pattern
-		String patternName = match.group(1);
-		Map<String, String> pattern = this.patterns.get(patternName);
-		if (pattern == null)
-			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", patternName, filename, linecount));
-		// TODO continue here
+		String patternNames = match.group(1);
+		Map<String, String> pattern = this.patterns.get(patternNames);
+		
+		if (pattern == null) {
+			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", patternNames, filename, linecount));
+		}
+		
+		String replacement = findLowestReplacement(pattern, targetVersion);
+		if (replacement == null) {
+			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", patternNames, filename, linecount, targetVersion));
+		}
+		
+		if(line.contains(replacement)) { // Optimization, if the targetversion is already the correct
+			return line;
+		}
+		
+		String replaceable = null;	
+		
+		for (Entry<String, String> entry : pattern.entrySet()) {
+			if (line.contains(entry.getValue())) {
+				replaceable = entry.getValue();
+				break;
+			}
+		}
+		
+		if (replaceable == null)
+			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", patternNames, filename, line));
+		
+		line = line.replace(replaceable, replacement);
+		
 		return line;
+	}
+	
+	private List<Map<String, String>> getPatterns(String patternnames){
+		
+		List<Map<String, String>> out = new ArrayList<>();
+		
+		String[] split = patternnames.split(","); 			// Split the names
+
+		for(String names : split) {
+			names = names.trim();	// trim any spaces
+			
+			Map<String, String> pattern = this.patterns.get(names);
+			if (pattern == null) {
+				System.out.println(String.format("The specified pattern %s in %s in line %s was not found", names, filename, linecount));
+				continue;
+			}
+			out.add(pattern);
+		}
+		return out;
 	}
 	
 	private String getDefault() {
@@ -269,6 +320,36 @@ public class Processor2 {
 		 * The "found" state indicates that the target version has been found and all versions beyond that can be disabled.
 		 */
 		FOUND
+	}
+	
+	/**
+	 * Finds the lowest pattern replacement for any target version
+	 * @param pattern Pattern
+	 * @param targetVersion Target version
+	 * @return Replacement
+	 */
+	private String findLowestReplacement(Map<String, String> pattern, String targetVersion) {
+		String replacement = pattern.get(targetVersion);
+		
+		if(replacement!=null) { // Optimization if the target version has a matching pattern
+			return replacement;
+		}
+		int targetVer = this.versions.indexOf(targetVersion);
+		
+		// Find index of target version
+		for (Entry<String, String> entry : pattern.entrySet()) {
+			int i = this.versions.indexOf(entry.getKey());
+			if ("def".equals(entry.getKey())) {
+				i = this.versions.size() - 1;
+			}
+			
+			// Break if version too high
+			if (targetVer > i)
+				break;
+			
+			replacement = entry.getValue();
+		}
+		return replacement;
 	}
 	
 }
