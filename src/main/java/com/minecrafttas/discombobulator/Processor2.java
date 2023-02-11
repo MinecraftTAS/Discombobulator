@@ -36,7 +36,7 @@ public class Processor2 {
 	 * Debug linecount for errors during preprocessing
 	 */
 	private int linecount = 0;
-	private boolean versionEnabled;
+	private boolean versionEnabled = true;
 	
 	/**
 	 * Creates a new processor. The default will be the lowest version.
@@ -138,8 +138,13 @@ public class Processor2 {
 		
 		for (String line : lines) {
 			linecount++;
-			line = preprocessVersionBlock(line, targetVersion);
-			line = preprocessPattern(line, targetVersion);
+			if (versions != null) {
+				line = preprocessVersionBlock(line, targetVersion);
+			}
+
+			if (patterns != null) {
+				line = preprocessPattern(line, targetVersion);
+			}
 			out.add(line);
 		}
 		
@@ -147,7 +152,7 @@ public class Processor2 {
 	}
 
 	private String preprocessVersionBlock(String line, String targetVersion) {
-		if(updateCurrentVersion(line)) {
+		if (updateCurrentVersion(line)) {
 			updateEnabled(targetVersion);
 			return line;
 		}
@@ -161,7 +166,7 @@ public class Processor2 {
 	 */
 	private void updateEnabled(String targetVersion) {
 		if(currentVersion == null) { // Check if we are outside a version block
-			versionEnabled = false;
+			versionEnabled = true;
 			return;
 		}
 		if (state == VersionState.FOUND) { // Check if the target version was already found
@@ -179,6 +184,9 @@ public class Processor2 {
 
 			if (currentIndex == -1) {
 				throw new RuntimeException(String.format("The specified version %s in %s in line %s was not found", currentVersion, filename, linecount));
+			}
+			if(targetIndex == -1) {
+				throw new RuntimeException(String.format("The target version %s was not found", targetVersion, filename, linecount));
 			}
 			if (targetIndex > currentIndex && !inverted) {
 				versionEnabled = false;
@@ -237,45 +245,53 @@ public class Processor2 {
 	}
 	
 	private String preprocessPattern(String line, String targetVersion) {
+		
 		Matcher match = this.regexPatterns.matcher(line);
 		if (!match.find()) {
 			return line;
 		}
-		
+
 		// find pattern
 		String patternNames = match.group(1);
-		Map<String, String> pattern = this.patterns.get(patternNames);
-		
-		if (pattern == null) {
+		List<Map<String, String>> patterns = getPatterns(patternNames);
+
+		if (patterns == null) {
 			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", patternNames, filename, linecount));
 		}
-		
-		String replacement = findLowestReplacement(pattern, targetVersion);
-		if (replacement == null) {
-			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", patternNames, filename, linecount, targetVersion));
-		}
-		
-		if(line.contains(replacement)) { // Optimization, if the targetversion is already the correct
-			return line;
-		}
-		
-		String replaceable = null;	
-		
-		for (Entry<String, String> entry : pattern.entrySet()) {
-			if (line.contains(entry.getValue())) {
-				replaceable = entry.getValue();
-				break;
+
+		for (Map<String, String> pattern : patterns) { // Iterate through multiple patterns
+			String replacement = findLowestReplacement(pattern, targetVersion);
+			if (replacement == null) {
+				throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", patternNames, filename, linecount, targetVersion));
 			}
+
+			if (line.contains(replacement)) { // Optimization, if the targetversion is already the correct
+				return line;
+			}
+
+			String replaceable = null;
+
+			for (Entry<String, String> entry : pattern.entrySet()) {
+				if (line.contains(entry.getValue())) {
+					replaceable = entry.getValue();
+					break;
+				}
+			}
+
+			if (replaceable == null)
+				throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", patternNames, filename, line));
+
+			line = line.replace(replaceable, replacement);
 		}
-		
-		if (replaceable == null)
-			throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", patternNames, filename, line));
-		
-		line = line.replace(replaceable, replacement);
-		
+
 		return line;
 	}
 	
+	/**
+	 * Split the patternnames and get the patterns
+	 * @param patternnames Names to split
+	 * @return A list of mapped patterns
+	 */
 	private List<Map<String, String>> getPatterns(String patternnames){
 		
 		List<Map<String, String>> out = new ArrayList<>();
@@ -295,6 +311,9 @@ public class Processor2 {
 		return out;
 	}
 	
+	/**
+	 * @return The default version
+	 */
 	private String getDefault() {
 		if(inverted) {
 			return versions.get(0);
