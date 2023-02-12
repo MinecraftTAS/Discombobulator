@@ -1,16 +1,16 @@
-package Test3;
+package Test4;
 
-public class Actual {
+public class Actual3 {
 	Minecraft mc = new Minecraft();
 	
-	public Actual() {
+	public Actual3() {
 		Minecraft mc = Minecraft.getInstance(); //@GetMinecraft;
 		mc.level=10;	//@GetLevel;
 		Minecraft.getInstance().level=10; //@GetMinecraft,GetLevel;
 		
 		Minecraft mc1 = Minecraft.getMinecraft(); // @ GetMinecraft;
 		mc1.world=10;	// @ GetLevel;
-		Minecraft.getMinecraft().world=10; // @ GetMinecraft , GetLevel;
+		Minecraft.getMinecraft(); // @ GetMinecraft , GetLevel;
 	}
 	
 	
