@@ -353,6 +353,10 @@ public class Processor2 {
 		if(replacement!=null) { // Optimization if the target version has a matching pattern
 			return replacement;
 		}
+		if(versions == null) {
+			System.err.println("[WARN] Versions list in the processor not found. The find lowest version will not work correctly");
+			return "";
+		}
 		int targetVer = this.versions.indexOf(targetVersion);
 		
 		// Find index of target version
