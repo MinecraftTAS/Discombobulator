@@ -129,7 +129,8 @@ public class Processor2 {
 	 * Minecraft.getMinecraft().setWindow(mc.window); // @GetWindow,GetMinecraft;
 	 * </pre>
 	 * 
-	 * <p>Similar to version blocks, if you specify a targetVersion for a pattern that does not specify that version, the next lowest (or highest if inverted) version will be chosen as a pattern, the default pattern if nothing was found.
+	 * <p>Similar to version blocks, if you specify a targetVersion for a pattern that does not specify that version, 
+	 * the next lowest (or highest if inverted) version will be chosen as a pattern, the default pattern if nothing was found.
 	 * 
 	 * @param targetVersion The version for which lines should be enabled
 	 * @param lines The lines to preprocess

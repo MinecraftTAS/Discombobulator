@@ -8,4 +8,6 @@ discombobulator {
 		"1.14.4",
 		"1.12.2"
 	]
+	
+	inverted = false
 }
