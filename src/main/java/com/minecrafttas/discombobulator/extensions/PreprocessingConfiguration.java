@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Property;
 
 /**
  * Configuration for preprocessing
@@ -40,4 +41,10 @@ public abstract class PreprocessingConfiguration {
 	 * @return Map of patterns
 	 */
 	public abstract MapProperty<String, Map<String, String>> getPatterns();
+	
+	/**
+	 * If the default version should be inverted
+	 * @return True if inverted
+	 */
+	public abstract Property<Boolean> getInverted();
 }

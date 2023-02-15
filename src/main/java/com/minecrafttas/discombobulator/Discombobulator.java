@@ -38,6 +38,7 @@ public class Discombobulator implements Plugin<Project> {
 		processor = new Processor();
 		// Create schedule
 		pathLock = new PathLock();
+		
 		// Register tasks
 		TaskPreprocessBase baseTask = project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get();
 		baseTask.setGroup("dicombobulator");
@@ -48,7 +49,8 @@ public class Discombobulator implements Plugin<Project> {
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
 		
 		project.afterEvaluate(_project -> {
-			
+			boolean inverted = config.getInverted().getOrElse(false);
+			System.out.println(inverted);
 			processor.initialize(getVersion(), config.getPatterns().get());
 		});
 	}

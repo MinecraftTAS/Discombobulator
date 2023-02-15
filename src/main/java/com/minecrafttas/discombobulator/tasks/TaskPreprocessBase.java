@@ -28,6 +28,20 @@ public class TaskPreprocessBase extends DefaultTask {
 		// Lock port
 		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
+		
+		System.out.println("\n"
+				+ " (                                                                 \n"
+				+ " )\\ )                         )         )      (         )         \n"
+				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
+				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
+				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
+				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
+				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
+				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
+				+ "                                                                   \n"
+				+ "\n"
+				+ "			 This is fine...\n"
+				+ "		Created by Pancake and Scribble\n\n");
 
 		// Prepare list of physical version folders
 		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
