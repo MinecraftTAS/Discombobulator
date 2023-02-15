@@ -19,7 +19,7 @@ import com.minecrafttas.discombobulator.utils.Pair;
  */
 public class Discombobulator implements Plugin<Project> {
 
-	public static final int PORT_LOCK = 8762;
+	public static int PORT_LOCK = 8762;
 
 	public static PreprocessingConfiguration config;
 
@@ -50,6 +50,7 @@ public class Discombobulator implements Plugin<Project> {
 		
 		project.afterEvaluate(_project -> {
 			boolean inverted = config.getInverted().getOrElse(false);
+			PORT_LOCK = config.getPort().getOrElse(8762);
 			System.out.println(inverted);
 			processor.initialize(getVersion(), config.getPatterns().get());
 		});
