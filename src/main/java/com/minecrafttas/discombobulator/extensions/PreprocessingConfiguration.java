@@ -47,4 +47,10 @@ public abstract class PreprocessingConfiguration {
 	 * @return True if inverted
 	 */
 	public abstract Property<Boolean> getInverted();
+	
+	/**
+	 * The port for the port lock
+	 * @return The port number
+	 */
+	public abstract Property<Integer> getPort();
 }
