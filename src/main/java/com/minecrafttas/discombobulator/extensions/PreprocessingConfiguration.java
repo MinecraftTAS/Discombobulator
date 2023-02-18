@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Property;
 
 /**
  * Configuration for preprocessing
@@ -17,7 +18,7 @@ public abstract class PreprocessingConfiguration {
 	 * versions = [
 	 * 	"1.14.4",
 	 * 	"1.12.2",
-	 * 	"1.8.9"
+	 * 	"1.8.9: AlternateFolderName1.8.9"
 	 * ]
 	 * </pre>
 	 * @return Ordered list of versions
@@ -40,5 +41,16 @@ public abstract class PreprocessingConfiguration {
 	 * @return Map of patterns
 	 */
 	public abstract MapProperty<String, Map<String, String>> getPatterns();
-
+	
+	/**
+	 * If the default version should be inverted
+	 * @return True if inverted
+	 */
+	public abstract Property<Boolean> getInverted();
+	
+	/**
+	 * The port for the port lock
+	 * @return The port number
+	 */
+	public abstract Property<Integer> getPort();
 }

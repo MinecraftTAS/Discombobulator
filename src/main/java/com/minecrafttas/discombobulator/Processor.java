@@ -4,211 +4,467 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Processor {
-
-	private Pattern regexBlocks;
-	private Pattern regexPatterns;
-
+	private final Pattern regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
+	private final Pattern regexPatterns = Pattern.compile("\\/\\/ *@(.+);");
+	
 	private List<String> versions;
 	private Map<String, Map<String, String>> patterns;
+	
+	private VersionState state = VersionState.NONE;
 
 	/**
-	 * Creates a preprocessor and initializes the regex
+	 * The current version of the preprocessor block that is processed. <br>
+	 * Null if the lines are outside of a preprocessor block.
 	 */
-	public Processor() {
-		this.regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
-		this.regexPatterns = Pattern.compile("\\/\\/ *@(.+)");
+	private String currentVersion = null;
+	
+	/**
+	 * If the list should be inverted with the first one being the default
+	 */
+	private final boolean inverted;
+	
+	/**
+	 * Debug filename for errors during preprocessing
+	 */
+	private String filename = "undefined";
+	
+	/**
+	 * Debug linecount for errors during preprocessing
+	 */
+	private int linecount = 0;
+	private boolean versionEnabled = true;
+	
+	/**
+	 * Creates a new processor. The default will be the lowest version.
+	 * 
+	 * <pre>
+	 * [
+	 * "1.20",
+	 * "1.19",
+	 * "1.18",
+	 * "1.16" <- default version since it's the lowest
+	 * ]
+	 * </pre>
+	 * @param versions The versions to check for in an order
+	 * @param patterns The patterns to check for in no specific order
+	 */
+	public Processor(List<String> versions, Map<String, Map<String, String>> patterns) {
+		this(versions, patterns, false);
 	}
-
+	
 	/**
-	 * Initializes the preprocessor with a list of versions and patterns
-	 * @param versions List of versions
-	 * @param patterns Map of patterns
+	 * Creates a new processor. The order can be inverted.
+	 * <p> If inverted is true:
+	 * 
+	 * <pre>
+	 * [
+	 * "1.20", <- default version since it's the highest
+	 * "1.19",
+	 * "1.18",
+	 * "1.16"
+	 * ]
+	 * </pre>
+	 * @param versions The versions to check for in an order
+	 * @param patterns The patterns to check for in no specific order
 	 */
-	public void initialize(List<String> versions, Map<String, Map<String, String>> patterns) {
+	public Processor(List<String> versions, Map<String, Map<String, String>> patterns, boolean inverted) {
+		if(versions == null) {
+			throw new NullPointerException("Versions can't be null!");
+		}
 		this.versions = versions;
 		this.patterns = patterns;
+		this.inverted = inverted;
 	}
-
+	
 	/**
-	 * Preprocesses the given lines to targetVersion
-	 * @param targetVersion Preprocess target
-	 * @param lines Lines to preprocess
-	 * @param filename Filename
-	 * @return Preprocessed Lines
+	 * Preprocesses the lines to a targeted version.
+	 * <p>Preprocessing can happen in 2 ways:<br>
+	 * <ol>
+	 * <li>Preprocessing a block of code</li>
+	 * <li>Preprocessing a specific line of code with patterns</li>
+	 * </ol>
+	 * <p>The advantage of pattern processing is that you can save yourself some work making a version block for common patterns like <code>Minecraft.getMinecraft().player</code> in 1.12 to <code>Minecraft.getMinecraft().thePlayer</code> in e.g. 1.10
+	 *
+	 * <h2>VersionBlock</h2>
+	 * <p>A version block allows you to uncomment part of the code in certain versions via comments:
+	 * <pre>
+	 * //# 1.12.2
+	 * 	The code you want to write in 1.12.2
+	 * //# 1.9.4
+	 * //$$	The code you want to write in 1.9.4
+	 * //# def
+	 * //$$	Default code that is below 1.9.4
+	 * //# end
+	 * </pre>
+	 * <p>Blocks start with a //# mcversion and end with a //# end. If the targeted version is not defined in the block, the next lowest version will be chosen for preprocessing (e.g. target is 1.11, doesn't exist, so 1.9.4 block will be preprocessed).<br>
+	 * You can define a default block that defaults to the lowest version you specified (e.g. 1.9.2 is lower than 1.9.4, no other version is lower, so it uses default). <br>
+	 * 
+	 * <p>You can define these blocks out of order (e.g. first 1.9.4 then 1.12.2), but the order is ultimately defined in the build.gradle under discombobulator.
+	 * 
+	 * <h2>Patterns</h2>
+	 * Patterns are defined in the build.gradle:
+	 * 
+	 * <pre>
+	 * patterns = [
+	 * 	GetWindow: [
+	 *		"def": "mc.window",
+	 *		"1.15.2": "mc.getWindow()"
+	 *	]
+	 * ]
+	 * </pre>
+	 * <p> Each pattern has a name and multiple versions, with a default under "def".<br>
+	 * To apply patterns, we have to write a <code>//@ patternname;</code> in the line we want to apply. Note that the pattern is terminated via semicolon.
+	 * 
+	 * <pre>
+	 * mc.window; // @GetWindow;
+	 * </pre>
+	 * 
+	 * <p>We can also apply multiple patterns in one line, seperated via comma:
+	 * 
+	 * <pre>
+	 * Minecraft.getMinecraft().setWindow(mc.window); // @GetWindow,GetMinecraft;
+	 * </pre>
+	 * 
+	 * <p>Similar to version blocks, if you specify a targetVersion for a pattern that does not specify that version, 
+	 * the next lowest (or highest if inverted) version will be chosen as a pattern, the default pattern if nothing was found.
+	 * 
+	 * @param targetVersion The version for which lines should be enabled
+	 * @param lines The lines to preprocess
+	 * @param filename Debug filename for errors during preprocessing
+	 * @return The preprocessed lines of the file
 	 */
 	public List<String> preprocess(String targetVersion, List<String> lines, String filename) {
-		// Specific version for current line or null
-		String currentVersion = null;
-		int master = -1;
-		
-		List<String> blocks = new ArrayList<>();
-
-		// Switch version blocks
-		for (String line : lines) {
-			// Pattern detection
-			var match = this.regexBlocks.matcher(line);
-			if (match.find()) {
-				var ver = currentVersion = match.group(1);
-				master = -1;
-				if (ver.equalsIgnoreCase("end")) {
-					currentVersion = null;
-					this.overflow = false;
-					this.perfectMatch = false;
-				}
-				blocks.add(line);
-				continue;
-			}
-
-			// Change lines accordingly
-			if (currentVersion != null) {
-				if (master == -1) {
-					master = this.isVersionEnabled(targetVersion, currentVersion, filename, lines.indexOf(line)) ? 2 : 1;
-				}
-				if (master == 2 && targetVersion != null) {
-					var changedLine = line;
-					if (line.startsWith("//$$"))
-						changedLine = line.replace("//$$", "");
-
-					blocks.add(changedLine);
-				} else {
-					var changedLine = line;
-					if (!line.startsWith("//$$"))
-						changedLine = "//$$" + line;
-
-					blocks.add(changedLine);
-				}
-				continue;
-			}
-			blocks.add(line);
-		}
-
+//		System.out.println(String.format("Preprocessing %s lines for version %s in the file %s filename", lines.size(), targetVersion, filename));
 		List<String> out = new ArrayList<>();
+		this.filename = filename;
+		this.linecount = 0;
+		
+		for (String line : lines) {
+			linecount++;
+			line = preprocessVersionBlock(line, targetVersion);
 
-		// Apply patterns
-		for (String line : blocks) {
-			var match = this.regexPatterns.matcher(line);
-			if (match.find()) {
-				// find pattern
-				var type = match.group(1);
-				var pattern = this.patterns.get(type);
-				if (pattern == null)
-					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found", type, filename, line));
-				// find current version
-				String toReplace = null;
-				for (Entry<String, String> entry : pattern.entrySet())
-					if (line.contains(entry.getValue())) {
-						toReplace = entry.getValue();
-						break;
-					}
-				if (toReplace == null)
-					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", type, filename, line));
-				// find replacement
-				var toReplaceWith = findLowestReplacement(pattern, targetVersion);
-				if (toReplaceWith == null)
-					throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", type, filename, line, targetVersion));
-				out.add(line.replace(toReplace, toReplaceWith));
-				continue;
+			if (patterns != null) {
+				line = preprocessPattern(line, targetVersion);
 			}
 			out.add(line);
 		}
-
+		
 		return out;
 	}
 
+	private String preprocessVersionBlock(String line, String targetVersion) {
+		if (updateCurrentVersion(line)) {
+			updateEnabled(targetVersion);
+			return line;
+		}
+		return enableLine(line, this.versionEnabled);
+	}
+	
 	/**
-	 * Finds the lowest pattern replacement for any target version
-	 * @param pattern Pattern
-	 * @param targetVersion Target version
-	 * @return Replacement
+	 * Updates the enabled status for the current block
+	 * If the target version is smaller or equal than the {@link #currentVersion}, {@link #versionEnabled} will be true. (If {@link #inverted} is false)
+	 * @param targetVersion
 	 */
-	private String findLowestReplacement(Map<String, String> pattern, String targetVersion) {
-		String replacement = null;
-		int targetVer = this.versions.indexOf(targetVersion);
-		
-		// Find index of target version
-		for (Entry<String, String> entry : pattern.entrySet()) {
-			int i = this.versions.indexOf(entry.getKey());
-			if ("def".equals(entry.getKey())) {
-				i = this.versions.size() - 1;
+	private void updateEnabled(String targetVersion) {
+		if(currentVersion == null) { // Check if we are outside a version block
+			versionEnabled = true;
+			return;
+		}
+		if(targetVersion == null) {
+			versionEnabled = false;
+			return;
+		}
+		if (state == VersionState.FOUND) { // Check if the target version was already found
+			versionEnabled = false;
+			return;
+		}
+		else if (state == VersionState.NONE) {
+			if ("def".equals(targetVersion)) { // Set the default version as the target version
+				targetVersion = getDefault();
 			}
+			// Getting the target and current index in the version. The higher the index the
+			// "lower" the mc version
+			int targetIndex = versions.indexOf(targetVersion);
+			int currentIndex = versions.indexOf(currentVersion);
+
+			if (currentIndex == -1) {
+				throw new RuntimeException(String.format("The specified version %s in %s in line %s was not found", currentVersion, filename, linecount));
+			}
+			if(targetIndex == -1) {
+				throw new RuntimeException(String.format("The target version %s was not found", targetVersion, filename, linecount));
+			}
+			if (targetIndex > currentIndex && !inverted) {
+				versionEnabled = false;
+			}
+			else if (targetIndex < currentIndex && inverted) {
+				versionEnabled = false;
+			}
+			else {								// If the targetIndex is equal or smaller than the currentIndex
+				state = VersionState.FOUND;
+				versionEnabled = true;
+			}
+		}
+	}
+
+	/**
+	 * Comments out or uncomments a line.
+	 * @param line The line to change
+	 * @param enable True if line should be enabled
+	 * @return The new line
+	 */
+	private String enableLine(String line, boolean enable) {
+		boolean isDisabled = line.startsWith("//$$");
+		if (enable)
+			return isDisabled ? line.replace("//$$", "") : line;
+		else
+			return isDisabled ? line : "//$$" + line;
+	}
+
+	/**
+	 * If the line contains any version block statements detected by {@linkplain #regexBlocks}, the {@link #currentVersion} will be updated
+	 * 
+	 * @param line The line to check
+	 * @return If the line contains a versionBlock statement
+	 */
+	private boolean updateCurrentVersion(String line) {
+		// Block detection
+		Matcher match = this.regexBlocks.matcher(line);
+		if (match.find()) {
+			String detectedVersion = match.group(1);
 			
-			// Break if version too high
-			if (targetVer > i)
-				break;
+			if (detectedVersion.equalsIgnoreCase("end")) {	// Process end
+				state = VersionState.NONE;
+				currentVersion = null;
+				return true;
+			}
+			else if(detectedVersion.equalsIgnoreCase("def")) { // Process default version
+				currentVersion = getDefault();
+				return true;
+			}
+			else {
+				currentVersion = detectedVersion;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private String preprocessPattern(String line, String targetVersion) {
+		
+		Matcher match = this.regexPatterns.matcher(line);
+		if (!match.find()) {
+			return line;
+		}
+
+		// find pattern
+		String patternNames = match.group(1);
+		List<Map<String, String>> patterns = getPatterns(patternNames);
+
+		for (Map<String, String> pattern : patterns) { // Iterate through multiple patterns
+			String replacement = findReplacement(pattern, targetVersion);
+			if (replacement == null) {
+				throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for target version %s", patternNames, filename, linecount, targetVersion));
+			}
+
+			if (line.contains(replacement)) { // Optimization, if the targetversion is already the correct
+				return line;
+			}
+
+			String replaceable = null;
+
+			for (Entry<String, String> entry : pattern.entrySet()) {
+				if (line.contains(entry.getValue())) {
+					replaceable = entry.getValue();
+					break;
+				}
+			}
+
+			if (replaceable == null)
+				throw new RuntimeException(String.format("The specified pattern %s in %s in line %s was not found for any version", patternNames, filename, line));
+
+			line = line.replace(replaceable, replacement);
+		}
+
+		return line;
+	}
+	
+	/**
+	 * Split the pattern names and get the patterns
+	 * @param patternnames Names to split
+	 * @return A list of mapped patterns
+	 */
+	private List<Map<String, String>> getPatterns(String patternnames){
+		
+		List<Map<String, String>> out = new ArrayList<>();
+		
+		String[] split = patternnames.split(","); 			// Split the names
+
+		for(String names : split) {
+			names = names.trim();	// trim any spaces
 			
-			replacement = entry.getValue();
+			Map<String, String> pattern = this.patterns.get(names);
+			if (pattern == null) {
+				System.out.println(String.format("The specified pattern %s in %s in line %s was not found", names, filename, linecount));
+				continue;
+			}
+			out.add(pattern);
+		}
+		return out;
+	}
+	
+	/**
+	 * @return The default version
+	 */
+	private String getDefault() {
+		return versions.get(getDefaultIndex());
+	}
+	
+	/**
+	 * @return The default index
+	 */
+	private int getDefaultIndex() {
+		return inverted ? 0 : versions.size()-1;
+	}
+	
+	/**
+	 * The processor tries to search for a matching version in the lines.<br>
+	 * Under certain circumstances the version changes depending on the state.
+	 * <p>(Yes this enum can be swapped out for a boolean but I think this is better for understanding)
+	 * 
+	 * @author Scribble
+	 *
+	 */
+	private enum VersionState{
+		/**
+		 * The "none" state indicates that the target version does not match the current version and we still have to look for a suitable version.
+		 */
+		NONE,
+		/**
+		 * The "found" state indicates that the target version has been found and all versions beyond that can be disabled.
+		 */
+		FOUND
+	}
+	
+	/**
+	 * Searches through the patterns to find the replacement text for any given target version.
+	 * 
+	 * If the version is not in the patterns, it finds the next lowest (highest if {@link #inverted} is true) version.
+	 * 
+	 * If the version is too low it uses the replacement defined in the "def" block.
+	 * 
+	 * If no version and no def block was found it returns null.
+	 * 
+	 * @param pattern The pattern to search through
+	 * @param targetVersion The version we want the replacement for
+	 * @return The string that should replace the pattern in the line. Null if no pattern was found.
+	 */
+	private String findReplacement(Map<String, String> pattern, String targetVersion) {
+		
+		String replacement = pattern.get(targetVersion);
+		
+		if(replacement!=null) { // Optimization if the target version has a matching pattern
+			return replacement;
+		}
+		
+		int targetIndex = this.versions.indexOf(targetVersion); // Get the targetIndex
+		
+		if(!inverted) {
+			replacement = searchPatterns(targetIndex, pattern);
+		} else {
+			replacement = searchPatternsInverted(targetIndex, pattern);
+		}
+		
+		if(replacement==null) {	// If there was no version found
+			if(pattern.containsKey("def")) {	// Use default as replacement
+				replacement = pattern.get("def");
+			}
+		}
+		
+		return replacement;
+	}
+	
+	/**
+	 * Search through versions lower than the targetVersion for a fitting version.
+	 * 
+	 * The higher the index, the lower the version. 
+	 * This loop starts at the lowest version and goes higher up to one below the target version
+	 * 
+	 * @param targetIndex The index we want to stop on
+	 * @param pattern The pattern to search through
+	 * @return The string that should replace the pattern in the line
+	 */
+	private String searchPatterns(int targetIndex, Map<String, String> pattern) {
+		String replacement = null;
+
+		for (int currentIndex = versions.size()-1; currentIndex > targetIndex; currentIndex--) {
+			String currentVersion = versions.get(currentIndex);
+			
+			if(pattern.containsKey(currentVersion)) {
+				replacement=pattern.get(currentVersion);
+			}
 		}
 		return replacement;
 	}
-
+	
 	/**
-	 * If you your target is e.g. 1.16.5,
-	 * but you do not have exactly 1.16.5 in the preprocessor block,
-	 * the next lowest version is used:
-	 *
-	 * (Target is 1.16.5)
-	 *
-	 * <pre>
-	 * //# 1.18.1
-	 * //$$ Code for 1.18.1 and up
-	 * //# 1.16.1
-	 * Code for 1.16.1 and up
-	 * //# 1.15.2
-	 * //$$ Code for 1.15.2 and up
-	 * </pre>
-	 *
-	 * Overflow is true, when the current version goes past the target and the next lowest is found
-	 * @see {@link #isVersionEnabled(String, String)}
+	 * Search through versions higher than the targetVersion for a fitting version.
+	 * 
+	 * The higher the index, the lower the version. 
+	 * This loop starts at the highest version and goes lower up to one above the target version
+	 * 
+	 * @param targetIndex The index we want to stop on
+	 * @param pattern The pattern to search through
+	 * @return The string that should replace the pattern in the line
 	 */
-	private boolean overflow = false;
+	private String searchPatternsInverted(int targetIndex, Map<String, String> pattern) {
+		String replacement = null;
 
-	/**
-	 * True when the versions match up perfectly
-	 * @see {@link #isVersionEnabled(String, String)}
-	 */
-	private boolean perfectMatch = false;
-
-	/**
-	 * Returns whether version specific code should be enabled on the target version or not
-	 * @param targetVersion Target version
-	 * @param currentVersion Version of the version specific code
-	 * @param filename Filename
-	 * @param line Current line in the file
-	 * @return Is version enabled?
-	 */
-	private boolean isVersionEnabled(String targetVersion, String currentVersion, String filename, int line) {
-		var targetVer = -1;
-		var currentVer = -1;
-
-		// Find index of current and target version
-		for (String version : this.versions) {
-			var i = this.versions.indexOf(version);
-			if (version.equals(targetVersion))
-				targetVer = i;
-			if (version.equals(currentVersion))
-				currentVer = i;
+		for (int currentIndex = 0; currentIndex < targetIndex; currentIndex++) {
+			String currentVersion = versions.get(currentIndex);
+			
+			if(pattern.containsKey(currentVersion)) {
+				replacement=pattern.get(currentVersion);
+			}
 		}
-		if ("def".equals(currentVersion))
-			currentVer = this.versions.size() - 1;
-
-		if (currentVer == -1)
-			throw new RuntimeException(String.format("The specified version %s in %s in line %s was not found", currentVersion, filename, line));
-
-		if (targetVer > currentVer)
-			return false;
-
-		if (targetVer == currentVer) {
-			this.perfectMatch = true;
-			return true;
-		}
-
-		if (this.perfectMatch || this.overflow)
-			return false;
-
-		this.overflow = true;
-		return true;
+		return replacement;
 	}
+	
+//	/**
+//	 * Finds the lowest pattern replacement for any target version
+//	 * @param pattern Pattern
+//	 * @param targetVersion Target version
+//	 * @return Replacement
+//	 */
+//	private String findLowestReplacement(Map<String, String> pattern, String targetVersion) {
+//		
+//		String replacement = pattern.get(targetVersion);
+//		
+//		if(replacement!=null) { // Optimization if the target version has a matching pattern
+//			return replacement;
+//		}
+//		int targetIndex = this.versions.indexOf(targetVersion);
+//		
+//		// Find index of target version
+//		for (Entry<String, String> entry : pattern.entrySet()) {
+//			
+//			int currentIndex = this.versions.indexOf(entry.getKey());
+//			if ("def".equals(entry.getKey())) {
+//				currentIndex = getDefaultIndex();
+//			}
+//			
+//			System.out.println(currentIndex);
+//			
+//			// Break if version too high
+//			if (targetIndex > currentIndex)
+//				break;
+//			
+//			replacement = entry.getValue();
+//		}
+//		return replacement;
+//	}
+	
 }

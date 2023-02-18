@@ -3,6 +3,7 @@ package com.minecrafttas.discombobulator.tasks;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
+import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 import com.minecrafttas.discombobulator.utils.SocketLock;
 
@@ -24,32 +26,54 @@ public class TaskPreprocessBase extends DefaultTask {
 	@TaskAction
 	public void preprocessBase() {
 		// Lock port
-		var lock = new SocketLock(Discombobulator.PORT_LOCK);
+		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
+		
+		System.out.println("\n"
+				+ " (                                                                 \n"
+				+ " )\\ )                         )         )      (         )         \n"
+				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
+				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
+				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
+				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
+				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
+				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
+				+ "                                                                   \n"
+				+ "\n"
+				+ "			 This is fine...\n"
+				+ "		Created by Pancake and Scribble\n\n");
 
 		// Prepare list of physical version folders
-		List<String> versions = new ArrayList<>();
-		for (File subDir : this.getProject().getProjectDir().listFiles())
-			if (new File(subDir, "build.gradle").exists())
-				versions.add(subDir.getName());
-
-		// Preprocess all files from base source
+		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
+		
+		List<Pair<String, String>> versions = new ArrayList<>();
+		
+		for (Pair<String, String> versionConf : versionsConfig) {
+			String path = versionConf.right();
+			if(path == null) {
+				path = versionConf.left();
+			}
+			if(new File(this.getProject().getProjectDir(), path+File.separator+"build.gradle").exists()) {
+				versions.add(versionConf);
+			}
+		}
+		
 		System.out.println("Preprocessing base source...");
 
-		var baseSourceDir = new File(this.getProject().getProjectDir(), "src");
+		File baseSourceDir = new File(this.getProject().getProjectDir(), "src");
 		if (!baseSourceDir.exists())
 			throw new RuntimeException("Base source folder not found");
 
 		BetterFileWalker.walk(baseSourceDir.toPath(), path -> {
 			System.out.println("Preprocessing " + path.getFileName());
 			try {
-				for (String version : versions) {
+				for (Pair<String, String> version : versions) {
 					// Find input and output file
-					var inFile = baseSourceDir.toPath().resolve(path);
-					var outFile = new File(baseSourceDir.getParent(), version + File.separatorChar + "src").toPath().resolve(path);
+					Path inFile = baseSourceDir.toPath().resolve(path);
+					Path outFile = new File(baseSourceDir.getParent(), version.right() + File.separatorChar + "src").toPath().resolve(path);
 
 					// Preprocess file
-					var lines = Discombobulator.processor.preprocess(version, Files.readAllLines(inFile), version);
+					List<String> lines = Discombobulator.processor.preprocess(version.left(), Files.readAllLines(inFile), version.left());
 
 					// Write file and update last modified date
 					Files.createDirectories(outFile.getParent());
@@ -63,13 +87,13 @@ public class TaskPreprocessBase extends DefaultTask {
 		});
 
 		// Delete all excess file in version folders
-		for (String version : versions) {
-			var subSourceDir = new File(baseSourceDir.getParent(), version + File.separatorChar + "src").toPath();
+		for (Pair<String, String> version : versions) {
+			Path subSourceDir = new File(baseSourceDir.getParent(), version.right() + File.separatorChar + "src").toPath();
 			BetterFileWalker.walk(subSourceDir, path -> {
 				// Verify if file exists in base source dir
-				var originalFile = baseSourceDir.toPath().resolve(path);
+				Path originalFile = baseSourceDir.toPath().resolve(path);
 				if (!Files.exists(originalFile)) {
-					System.out.println("Deleting " + path.getFileName() + " in " + version);
+					System.out.println("Deleting " + path.getFileName() + " in " + version.left());
 					SafeFileOperations.delete(subSourceDir.resolve(path).toFile());
 				}
 			});
