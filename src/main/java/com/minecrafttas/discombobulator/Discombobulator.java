@@ -34,8 +34,6 @@ public class Discombobulator implements Plugin<Project> {
 	public void apply(Project project) {
 		// Make buildscript extension for preprocessor
 		config = project.getExtensions().create("discombobulator", PreprocessingConfiguration.class);
-		// Create Processor
-		processor = new Processor();
 		// Create schedule
 		pathLock = new PathLock();
 		
@@ -51,8 +49,7 @@ public class Discombobulator implements Plugin<Project> {
 		project.afterEvaluate(_project -> {
 			boolean inverted = config.getInverted().getOrElse(false);
 			PORT_LOCK = config.getPort().getOrElse(8762);
-			System.out.println(inverted);
-			processor.initialize(getVersion(), config.getPatterns().get());
+			processor = new Processor(getVersion(), config.getPatterns().get(), inverted);
 		});
 	}
 	

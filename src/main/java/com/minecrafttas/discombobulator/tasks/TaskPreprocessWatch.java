@@ -46,6 +46,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 		lock.tryLock();
 
 		// Prepare list of physical version folders
+		// Left=Version, Right=Path to gradle folder
 		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
 		
 		List<Pair<String, Path>> versions = new ArrayList<>();
@@ -58,7 +59,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 			File rootDir = new File(this.getProject().getProjectDir() + File.separator + path);
 			if(new File(rootDir, "build.gradle").exists()) {
 				String ver = versionConf.left();
-				versions.add(Pair.of(ver, rootDir.toPath().toAbsolutePath()));
+				versions.add(Pair.of(ver, new File(rootDir, "src").toPath().toAbsolutePath()));
 			}
 		}
 		
@@ -83,8 +84,8 @@ public class TaskPreprocessWatch extends DefaultTask {
 	 * @param versions Map of versions
 	 */
 	private void watch(Path file, List<Pair<String, Path>> versions) {
-		var thread = new Thread(() -> {
-			var version = file.getParent().getFileName().toString();
+		Thread thread = new Thread(() -> {
+			String version = file.getParent().getFileName().toString();
 			FileWatcher watcher = null;
 			try {
 				
@@ -115,11 +116,14 @@ public class TaskPreprocessWatch extends DefaultTask {
 							// Iterate through all versions
 							for (Pair<String, Path> subVersion : versions) {
 								// If the version equals the original version, then skip it
-								if (subVersion.left().equals(version))
+								if (subVersion.left().equals(version)) {
 									continue;
+								}
+								System.out.println(subVersion.left()+" "+version);
 								
 								// Preprocess the lines
 								List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename);
+								
 								
 								// Write file
 								Path outFile = subVersion.right().resolve(relativeFile);
