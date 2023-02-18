@@ -12,7 +12,7 @@ import java.util.Map;
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-import com.minecrafttas.discombobulator.Processor2;
+import com.minecrafttas.discombobulator.Processor;
 
 class ProcessorTestPatterns {
 
@@ -35,7 +35,7 @@ class ProcessorTestPatterns {
 			"1.11.2"
 	);
 
-	private Processor2 processor=new Processor2(allVersions, patterns);
+	private Processor processor=new Processor(allVersions, patterns);
 	
 	/**
 	 * TargetVersion: 1.14.4
@@ -107,6 +107,22 @@ class ProcessorTestPatterns {
 		String expected = String.join("\n", linesExpected);
 		
 		assertEquals(expected, actual);
+	}
+	
+	/**
+	 * TargetVersion: 1.14.2
+	 * Expected: Fail
+	 * @throws IOException
+	 */
+	@Test
+	void testNonExistingPattern() throws IOException {
+		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test4/Actual3.java"), StandardCharsets.UTF_8);
+		
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			processor.preprocess("1.14.4", linesBase, "Actual");
+		});
+
+		assertEquals("The specified pattern  GetMinecraft , GetLevel in Actual in line 		Minecraft.getInstance(); // @ GetMinecraft , GetLevel; was not found for any version", exception.getMessage());
 	}
 
 }

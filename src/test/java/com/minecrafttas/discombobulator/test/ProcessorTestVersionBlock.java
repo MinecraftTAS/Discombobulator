@@ -11,7 +11,7 @@ import java.util.List;
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-import com.minecrafttas.discombobulator.Processor2;
+import com.minecrafttas.discombobulator.Processor;
 
 class ProcessorTestVersionBlock {
 
@@ -32,7 +32,7 @@ class ProcessorTestVersionBlock {
 	);
 	
 	
-	private Processor2 processor=new Processor2(allVersions, null);
+	private Processor processor=new Processor(allVersions, null);
 
 	/**
 	 * TargetVersion: 1.18.1
@@ -136,5 +136,23 @@ class ProcessorTestVersionBlock {
 		});
 
 		assertEquals("The specified version CrazyVersionName in Actual in line 6 was not found", exception.getMessage());
+	}
+	
+	/**
+	 * TargetVersion: null
+	 * Expected: All comment out
+	 * @throws IOException
+	 */
+	@Test
+	void testNoTargetVersion() throws IOException {
+		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test1/Actual.java"), StandardCharsets.UTF_8);
+		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/Test1/Expected4.txt"), StandardCharsets.UTF_8);
+		
+		List<String> linesActual = processor.preprocess(null, linesBase, "Actual");
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", linesExpected);
+		
+		assertEquals(actual, expected);
 	}
 }
