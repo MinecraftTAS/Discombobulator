@@ -1,6 +1,14 @@
 name: Test Discombobulator
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+      
 
 jobs:
   test:
