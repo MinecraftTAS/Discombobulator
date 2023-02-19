@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +48,7 @@ class ProcessorTestPatterns {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test3/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/Test3/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/Test3/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -65,7 +66,7 @@ class ProcessorTestPatterns {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test3/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/Test3/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.15.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.15.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/Test3/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -83,7 +84,7 @@ class ProcessorTestPatterns {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test3/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/Test3/Expected2.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.12.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.12.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/Test3/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -101,7 +102,7 @@ class ProcessorTestPatterns {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test3/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/Test3/Expected2.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.11.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.11.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/Test3/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -119,7 +120,7 @@ class ProcessorTestPatterns {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/Test4/Actual3.java"), StandardCharsets.UTF_8);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess("1.14.4", linesBase, "Actual");
+			processor.preprocess("1.14.4", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/Test3/Actual.java"));
 		});
 
 		assertEquals("The specified pattern  GetMinecraft , GetLevel in Actual in line 		Minecraft.getInstance(); // @ GetMinecraft , GetLevel; was not found for any version", exception.getMessage());

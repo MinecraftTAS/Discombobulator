@@ -1,0 +1,11 @@
+accessWidener v1 named
+
+# Savestate Mod
+## 1.16.1
+Ac code for 1.16.1
+## 1.14.4
+#$$Ac code for 1.14.4
+## end
+
+# Dragon Manipulation
+accessible field net/minecraft/world/level/pathfinder/Path nodes Ljava/util/List;
