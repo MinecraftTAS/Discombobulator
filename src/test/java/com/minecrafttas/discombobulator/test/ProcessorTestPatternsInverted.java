@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ class ProcessorTestPatternsInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestPatternsInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -66,7 +67,7 @@ class ProcessorTestPatternsInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.13.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.13.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestPatternsInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -84,7 +85,7 @@ class ProcessorTestPatternsInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected2.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.11.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.11.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestPatternsInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
@@ -102,7 +103,7 @@ class ProcessorTestPatternsInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.16.1", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.16.1", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestPatternsInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);

@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 
 public class Processor {
 	private final Pattern regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
-	private final Pattern regexPatterns = Pattern.compile("\\/\\/ *@(.+);");
+	private final Pattern regexHashtag = Pattern.compile("## (.+)");
+	private final Pattern regexPatterns = Pattern.compile("^.+\\/\\/ *@(.+);");
 	
 	private List<String> versions;
 	private Map<String, Map<String, String>> patterns;
@@ -137,15 +138,16 @@ public class Processor {
 	 * @param filename Debug filename for errors during preprocessing
 	 * @return The preprocessed lines of the file
 	 */
-	public List<String> preprocess(String targetVersion, List<String> lines, String filename) {
-//		System.out.println(String.format("Preprocessing %s lines for version %s in the file %s filename", lines.size(), targetVersion, filename));
+	public List<String> preprocess(String targetVersion, List<String> lines, String filename, String fileending) {
 		List<String> out = new ArrayList<>();
 		this.filename = filename;
 		this.linecount = 0;
 		
+		boolean useHashtags = shouldUseHashTag(fileending);
+		
 		for (String line : lines) {
 			linecount++;
-			line = preprocessVersionBlock(line, targetVersion);
+			line = preprocessVersionBlock(line, targetVersion, useHashtags);
 
 			if (patterns != null) {
 				line = preprocessPattern(line, targetVersion);
@@ -156,12 +158,16 @@ public class Processor {
 		return out;
 	}
 
-	private String preprocessVersionBlock(String line, String targetVersion) {
-		if (updateCurrentVersion(line)) {
+	private boolean shouldUseHashTag(String fileending) {
+		return "accesswidener".equals(fileending);
+	}
+	
+	private String preprocessVersionBlock(String line, String targetVersion, boolean useHashTag) {
+		if (updateCurrentVersion(line, useHashTag)) {
 			updateEnabled(targetVersion);
 			return line;
 		}
-		return enableLine(line, this.versionEnabled);
+		return enableLine(line, this.versionEnabled, useHashTag);
 	}
 	
 	/**
@@ -216,23 +222,36 @@ public class Processor {
 	 * @param enable True if line should be enabled
 	 * @return The new line
 	 */
-	private String enableLine(String line, boolean enable) {
-		boolean isDisabled = line.startsWith("//$$");
+	private String enableLine(String line, boolean enable, boolean useHashTag) {
+		
+		String commentChars = "//";
+		if(useHashTag) {
+			commentChars = "#";
+		}
+		
+		boolean isDisabled = line.startsWith(commentChars+"$$");
 		if (enable)
-			return isDisabled ? line.replace("//$$", "") : line;
+			return isDisabled ? line.replace(commentChars+"$$", "") : line;
 		else
-			return isDisabled ? line : "//$$" + line;
+			return isDisabled ? line : commentChars+"$$" + line;
 	}
 
 	/**
 	 * If the line contains any version block statements detected by {@linkplain #regexBlocks}, the {@link #currentVersion} will be updated
 	 * 
 	 * @param line The line to check
+	 * @param useHashTag 
 	 * @return If the line contains a versionBlock statement
 	 */
-	private boolean updateCurrentVersion(String line) {
+	private boolean updateCurrentVersion(String line, boolean useHashTag) {
 		// Block detection
-		Matcher match = this.regexBlocks.matcher(line);
+		Matcher match;
+		if(useHashTag)
+			match = regexHashtag.matcher(line);
+		else
+			match = regexBlocks.matcher(line);
+		
+		
 		if (match.find()) {
 			String detectedVersion = match.group(1);
 			

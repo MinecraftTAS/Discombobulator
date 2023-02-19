@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
 import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -36,12 +37,12 @@ class ProcessorTestVersionBlockInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.8.9", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.8.9", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestVersionInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
@@ -54,12 +55,12 @@ class ProcessorTestVersionBlockInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Expected1.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.7.10", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.7.10", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestVersionInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
@@ -72,12 +73,12 @@ class ProcessorTestVersionBlockInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Expected2.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.12", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.12", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestVersionInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
@@ -90,12 +91,12 @@ class ProcessorTestVersionBlockInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Expected2.txt"), StandardCharsets.UTF_8);
 		
-		List<String> linesActual = processor.preprocess("1.12.2", linesBase, "Actual");
+		List<String> linesActual = processor.preprocess("1.12.2", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestVersionInverted/Actual.java"));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", linesExpected);
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 
 	/**
@@ -108,7 +109,7 @@ class ProcessorTestVersionBlockInverted {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess("1.1", linesBase, "Actual");
+			processor.preprocess("1.1", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestVersionInverted/Actual.java"));
 		});
 
 		assertEquals("The target version 1.1 was not found", exception.getMessage());

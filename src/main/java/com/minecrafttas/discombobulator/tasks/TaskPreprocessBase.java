@@ -73,7 +73,8 @@ public class TaskPreprocessBase extends DefaultTask {
 					Path outFile = new File(baseSourceDir.getParent(), version.right() + File.separatorChar + "src").toPath().resolve(path);
 
 					// Preprocess file
-					List<String> lines = Discombobulator.processor.preprocess(version.left(), Files.readAllLines(inFile), version.left());
+					String[] split = path.getFileName().toString().split("\\.");
+					List<String> lines = Discombobulator.processor.preprocess(version.left(), Files.readAllLines(inFile), version.left(), split[split.length-1]);
 
 					// Write file and update last modified date
 					Files.createDirectories(outFile.getParent());

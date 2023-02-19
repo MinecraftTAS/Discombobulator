@@ -129,8 +129,11 @@ public class TaskPreprocessWatch extends DefaultTask {
 							continue;
 						}
 
+						System.out.println(path);
+						
 						// Preprocess the lines
-						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename);
+						String[] split = path.getFileName().toString().split("\\.");
+						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename, split[split.length-1]);
 
 						// Write file
 						Path outFile = subVersion.right().resolve(relativeFile);
@@ -141,7 +144,8 @@ public class TaskPreprocessWatch extends DefaultTask {
 						Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 					}
 					// Modify this file in base project
-					List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename);
+					String[] split = path.getFileName().toString().split("\\.");
+					List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename, split[split.length-1]);
 					Path outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
 					Files.createDirectories(outFile.getParent());
 					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
