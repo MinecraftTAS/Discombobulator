@@ -1,21 +1,19 @@
 package com.minecrafttas.discombobulator.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
-import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
 import com.minecrafttas.discombobulator.Processor;
 import com.minecrafttas.discombobulator.utils.Pair;
 
-class ProcessorTestVersionBlock {
+class ProcessorTestVersionBlock extends TestBase{
 
 	
 	private List<String> allVersions = Arrays.asList(
@@ -45,7 +43,7 @@ class ProcessorTestVersionBlock {
 	void testTargetVersionBeingExact() throws IOException {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "Expected1.txt";
+		String expectedName = "Expected1.18.1.txt";
 		String targetVersion = "1.18.1";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -67,7 +65,7 @@ class ProcessorTestVersionBlock {
 	void testTargetVersionBeingAbove() throws IOException {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "Expected2.txt";
+		String expectedName = "Expected1.16.1.txt";
 		String targetVersion = "1.16.5";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -89,7 +87,7 @@ class ProcessorTestVersionBlock {
 	void testTargetVersionBeingAboveDefault() throws IOException {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "Expected3.txt";
+		String expectedName = "Expected1.14.1.txt";
 		String targetVersion = "infinity";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -111,7 +109,7 @@ class ProcessorTestVersionBlock {
 	void testTargetVersionBeingDefault() throws IOException {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "Expected3.txt";
+		String expectedName = "Expected1.14.1.txt";
 		String targetVersion = "1.14.4";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -152,9 +150,9 @@ class ProcessorTestVersionBlock {
 	 */
 	@Test
 	void testNonExistingVersion() throws IOException {
-		String folder = "Test2";
+		String folder = "TestVersionFail";
 		String actualName = "Actual.java";
-		String expectedName = "Actual.java";
+		String expectedName = null;
 		String targetVersion = "1.16.1";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -175,7 +173,7 @@ class ProcessorTestVersionBlock {
 	void testNoTargetVersion() throws IOException {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "Expected4.txt";
+		String expectedName = "ExpectedNone.txt";
 		String targetVersion = null;
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
@@ -188,21 +186,4 @@ class ProcessorTestVersionBlock {
 		assertEquals(actual, expected);
 	}
 	
-	private Pair<List<String>, List<String>> getLines(String folder, String actualName, String expectedName) throws IOException{
-		
-		List<String> linesBase = null;
-		if(actualName!=null) {
-			File actualFile = new File(String.format("src/test/resources/%s/%s", folder, actualName));
-			linesBase = FileUtils.readLines(actualFile, StandardCharsets.UTF_8);
-		}
-		
-		List<String> linesExpected = null;
-		if(expectedName!=null) {
-			File expectedFile = new File(String.format("src/test/resources/%s/%s", folder, expectedName));
-			linesExpected = FileUtils.readLines(expectedFile, StandardCharsets.UTF_8);
-		}
-		
-		
-		return Pair.of(linesBase, linesExpected);
-	}
 }

@@ -1,4 +1,4 @@
-package Test4;
+package TestPatternFail;
 
 public class Actual3 {
 	Minecraft mc = new Minecraft();
