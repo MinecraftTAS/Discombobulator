@@ -27,7 +27,7 @@ public class Discombobulator implements Plugin<Project> {
 	
 	public static PathLock pathLock;
 	
-	public static final String discoVersion = "1.1.1-SNAPSHOT";
+	public static final String discoVersion = "1.1.0-SNAPSHOT";
 	
 	public static final String splash = "\n"
 			+ " (                                                                 \n"
