@@ -2,19 +2,18 @@ package com.minecrafttas.discombobulator.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
+import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
 import org.junit.jupiter.api.Test;
 
 import com.minecrafttas.discombobulator.Processor;
+import com.minecrafttas.discombobulator.utils.Pair;
 
-class ProcessorTestPatternsInverted {
+class ProcessorTestPatternsInverted extends TestBase{
 
 	Map<String, Map<String, String>> patterns = Map.of(
 			"GetLevel", Map.of(
@@ -45,13 +44,17 @@ class ProcessorTestPatternsInverted {
 	 */
 	@Test
 	void testPattern1() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
+		String folder = "TestPatternsInverted";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.14.4.txt";
+		String targetVersion = "1.14.4";
 		
-		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual");
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}
@@ -63,13 +66,17 @@ class ProcessorTestPatternsInverted {
 	 */
 	@Test
 	void testPattern2() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
+		String folder = "TestPatternsInverted";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.14.4.txt";
+		String targetVersion = "1.13.2";
 		
-		List<String> linesActual = processor.preprocess("1.13.2", linesBase, "Actual");
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}
@@ -81,13 +88,17 @@ class ProcessorTestPatternsInverted {
 	 */
 	@Test
 	void testPattern3() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected2.txt"), StandardCharsets.UTF_8);
+		String folder = "TestPatternsInverted";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.12.2.txt";
+		String targetVersion = "1.11.2";
 		
-		List<String> linesActual = processor.preprocess("1.11.2", linesBase, "Actual");
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}
@@ -99,13 +110,17 @@ class ProcessorTestPatternsInverted {
 	 */
 	@Test
 	void testPattern4() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Actual.java"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestPatternsInverted/Expected1.txt"), StandardCharsets.UTF_8);
+		String folder = "TestPatternsInverted";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.14.4.txt";
+		String targetVersion = "1.16.1";
 		
-		List<String> linesActual = processor.preprocess("1.16.1", linesBase, "Actual");
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}

@@ -29,19 +29,7 @@ public class TaskPreprocessBase extends DefaultTask {
 		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 		
-		System.out.println("\n"
-				+ " (                                                                 \n"
-				+ " )\\ )                         )         )      (         )         \n"
-				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
-				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
-				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
-				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
-				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
-				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
-				+ "                                                                   \n"
-				+ "\n"
-				+ "			 This is fine...\n"
-				+ "		Created by Pancake and Scribble\n\n");
+		System.out.println(Discombobulator.splash);
 
 		// Prepare list of physical version folders
 		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
@@ -54,7 +42,7 @@ public class TaskPreprocessBase extends DefaultTask {
 				path = versionConf.left();
 			}
 			if(new File(this.getProject().getProjectDir(), path+File.separator+"build.gradle").exists()) {
-				versions.add(versionConf);
+				versions.add(Pair.of(versionConf.left(), path));
 			}
 		}
 		
@@ -72,8 +60,12 @@ public class TaskPreprocessBase extends DefaultTask {
 					Path inFile = baseSourceDir.toPath().resolve(path);
 					Path outFile = new File(baseSourceDir.getParent(), version.right() + File.separatorChar + "src").toPath().resolve(path);
 
+//					System.out.println(inFile);
+//					System.out.println(outFile+"\n");
+					
 					// Preprocess file
-					List<String> lines = Discombobulator.processor.preprocess(version.left(), Files.readAllLines(inFile), version.left());
+					String[] split = path.getFileName().toString().split("\\.");
+					List<String> lines = Discombobulator.processor.preprocess(version.left(), Files.readAllLines(inFile), version.left(), split[split.length-1]);
 
 					// Write file and update last modified date
 					Files.createDirectories(outFile.getParent());
@@ -102,5 +94,4 @@ public class TaskPreprocessBase extends DefaultTask {
 		// Unlock port
 		lock.unlock();
 	}
-
 }

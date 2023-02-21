@@ -30,19 +30,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	@TaskAction
 	public void preprocessWatch() {
-		System.out.println("\n"
-				+ " (                                                                 \n"
-				+ " )\\ )                         )         )      (         )         \n"
-				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
-				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
-				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
-				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
-				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
-				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
-				+ "                                                                   \n"
-				+ "\n"
-				+ "			 This is fine...\n"
-				+ "		Created by Pancake and Scribble\n\n");
+		System.out.println(Discombobulator.splash);
 		// Lock port
 		var lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
@@ -125,12 +113,13 @@ public class TaskPreprocessWatch extends DefaultTask {
 					// Iterate through all versions
 					for (Pair<String, Path> subVersion : versions) {
 						// If the version equals the original version, then skip it
-						if (subVersion.right().equals(file)) {
-							continue;
-						}
+//						if (subVersion.right().equals(file)) {
+//							continue;
+//						}
 
 						// Preprocess the lines
-						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename);
+						String[] split = path.getFileName().toString().split("\\.");
+						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename, split[split.length-1]);
 
 						// Write file
 						Path outFile = subVersion.right().resolve(relativeFile);
@@ -141,7 +130,8 @@ public class TaskPreprocessWatch extends DefaultTask {
 						Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 					}
 					// Modify this file in base project
-					List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename);
+					String[] split = path.getFileName().toString().split("\\.");
+					List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename, split[split.length-1]);
 					Path outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
 					Files.createDirectories(outFile.getParent());
 					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -207,5 +197,4 @@ public class TaskPreprocessWatch extends DefaultTask {
 				watcher.close();
 		}
 	}
-
 }

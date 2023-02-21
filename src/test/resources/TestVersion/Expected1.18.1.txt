@@ -1,4 +1,4 @@
-package Test1;
+package TestVersion;
 
 public class Actual {
 	//# 1.18.1
