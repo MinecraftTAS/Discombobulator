@@ -30,19 +30,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	@TaskAction
 	public void preprocessWatch() {
-		System.out.println("\n"
-				+ " (                                                                 \n"
-				+ " )\\ )                         )         )      (         )         \n"
-				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
-				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
-				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
-				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
-				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
-				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
-				+ "                                                                   \n"
-				+ "\n"
-				+ "			 This is fine...\n"
-				+ "		Created by Pancake and Scribble\n\n");
+		System.out.println(Discombobulator.splash);
 		// Lock port
 		var lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
@@ -125,12 +113,10 @@ public class TaskPreprocessWatch extends DefaultTask {
 					// Iterate through all versions
 					for (Pair<String, Path> subVersion : versions) {
 						// If the version equals the original version, then skip it
-						if (subVersion.right().equals(file)) {
-							continue;
-						}
+//						if (subVersion.right().equals(file)) {
+//							continue;
+//						}
 
-						System.out.println(path);
-						
 						// Preprocess the lines
 						String[] split = path.getFileName().toString().split("\\.");
 						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename, split[split.length-1]);
@@ -211,5 +197,4 @@ public class TaskPreprocessWatch extends DefaultTask {
 				watcher.close();
 		}
 	}
-
 }
