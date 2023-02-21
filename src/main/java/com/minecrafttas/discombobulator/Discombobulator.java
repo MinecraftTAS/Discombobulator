@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ModuleVersionIdentifier;
 
 import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
@@ -27,23 +29,8 @@ public class Discombobulator implements Plugin<Project> {
 	
 	public static PathLock pathLock;
 	
-	public static final String discoVersion = "1.1.0-SNAPSHOT";
+	private static String discoVersion;
 	
-	public static final String splash = "\n"
-			+ " (                                                                 \n"
-			+ " )\\ )                         )         )      (         )         \n"
-			+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
-			+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
-			+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
-			+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
-			+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
-			+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
-			+ "                                                                   \n"
-			+ "\n"
-			+ getCenterText("Now with less bugs, I think...")+"\n"
-			+ "		Created by Pancake and Scribble\n"
-			+ getCenterText(discoVersion)+"\n\n";
-
 	/**
 	 * Apply the gradle plugin to the project
 	 */
@@ -67,7 +54,36 @@ public class Discombobulator implements Plugin<Project> {
 			boolean inverted = config.getInverted().getOrElse(false);
 			PORT_LOCK = config.getPort().getOrElse(8762);
 			processor = new Processor(getVersion(), config.getPatterns().get(), inverted);
+			
+			// Yes this is yoinked from the gradle forums to get the disco version. Is there a better method? Probably. Do I care? Currently, no.
+			final Configuration classpath = _project.getBuildscript().getConfigurations().getByName("classpath");
+			final String version = classpath.getResolvedConfiguration().getResolvedArtifacts().stream()
+				.map(artifact -> artifact.getModuleVersion().getId())
+				.filter(id -> "com.minecrafttas".equals(id.getGroup()) && "Discombobulator".equals(id.getName()))
+				.findAny()
+				.map(ModuleVersionIdentifier::getVersion)
+				.orElseThrow(() -> new IllegalStateException("Discombobulator plugin has been deployed with wrong coordinates: expected group to be 'com.minecrafttas' and name to be 'Discombobulator'"));
+			discoVersion = version;
 		});
+		
+	}
+	
+	public static String getSplash() {
+		return "\n"
+				+ " (                                                                 \n"
+				+ " )\\ )                         )         )      (         )         \n"
+				+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
+				+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
+				+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
+				+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
+				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
+				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
+				+ "                                                                   \n"
+				+ "\n"
+				+ getCenterText("Now with less bugs, I think...")+"\n"
+				+ "		Created by Pancake and Scribble\n"
+				+ getCenterText(discoVersion)+"\n\n";
+
 	}
 	
 	public static List<Pair<String, String>> getVersionPairs(){

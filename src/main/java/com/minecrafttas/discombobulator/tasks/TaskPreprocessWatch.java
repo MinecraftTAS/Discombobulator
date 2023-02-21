@@ -30,7 +30,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	@TaskAction
 	public void preprocessWatch() {
-		System.out.println(Discombobulator.splash);
+		System.out.println(Discombobulator.getSplash());
 		// Lock port
 		var lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
