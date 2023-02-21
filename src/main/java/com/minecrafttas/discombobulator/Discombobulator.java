@@ -26,6 +26,23 @@ public class Discombobulator implements Plugin<Project> {
 	public static Processor processor;
 	
 	public static PathLock pathLock;
+	
+	public static final String discoVersion = "1.1.1-SNAPSHOT";
+	
+	public static final String splash = "\n"
+			+ " (                                                                 \n"
+			+ " )\\ )                         )         )      (         )         \n"
+			+ "(()/( (               )    ( /(      ( /(   (  )\\   ) ( /(    (    \n"
+			+ " /(_)))\\ (   (  (    (     )\\())  (  )\\()) ))\\((_| /( )\\())(  )(   \n"
+			+ "(_))_((_))\\  )\\ )\\   )\\  '((_)\\   )\\((_)\\ /((_)_ )(_)|_))/ )\\(()\\  \n"
+			+ " |   \\(_|(_)((_|(_)_((_)) | |(_) ((_) |(_|_))(| ((_)_| |_ ((_)((_) \n"
+			+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
+			+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
+			+ "                                                                   \n"
+			+ "\n"
+			+ getCenterText("Now with less bugs, I think...")+"\n"
+			+ "		Created by Pancake and Scribble\n"
+			+ getCenterText(discoVersion)+"\n\n";
 
 	/**
 	 * Apply the gradle plugin to the project
@@ -80,4 +97,12 @@ public class Discombobulator implements Plugin<Project> {
 		return versions;
 	}
 
+	private static String getCenterText(String text) {
+		int length = text.length();
+		int total = 31;
+		if(length%2==0) {
+			total = 32;
+		}
+		return String.format("%s%s", " ".repeat(total-length/2), text);
+	}
 }
