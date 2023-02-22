@@ -25,10 +25,10 @@ jobs:
       uses: gradle/gradle-build-action@v2.3.3
       with:
         gradle-version: 7.6
-    - name: Test
-      run: gradle test
-    - name: JUnit Report Action
-      uses: mikepenz/action-junit-report@v3.7.4
-      if: success() || failure() # always run even if the previous step fails
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v3
+      if: always() # always run even if the previous step fails
       with:
-        report_paths: '**/build/test-results/test/TEST-*.xml'
+        name: junit-test-results
+        path: '**/build/test-results/test/TEST-*.xml'
+        retention-days: 1
