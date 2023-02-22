@@ -25,6 +25,8 @@ jobs:
       uses: gradle/gradle-build-action@v2.3.3
       with:
         gradle-version: 7.6
+    - name: Test
+      run: gradle test
     - name: Upload Test Report
       uses: actions/upload-artifact@v3
       if: always() # always run even if the previous step fails
