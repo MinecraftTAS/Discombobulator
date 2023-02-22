@@ -3,7 +3,6 @@ package com.minecrafttas.discombobulator.test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -31,10 +30,10 @@ class ProcessorTestVersionBlockInverted extends TestBase{
 	/**
 	 * TargetVersion: 1.8.9
 	 * Expected: 1.8.9
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingExact() throws IOException {
+	void testTargetVersionBeingExact() throws Exception {
 		String folder = "TestVersionInverted";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.8.9.txt";
@@ -53,10 +52,10 @@ class ProcessorTestVersionBlockInverted extends TestBase{
 	/**
 	 *	TargetVersion: 1.7.10
 	 *	Expected: 1.8.9
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingBelow() throws IOException {
+	void testTargetVersionBeingBelow() throws Exception {
 		String folder = "TestVersionInverted";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.8.9.txt";
@@ -75,10 +74,10 @@ class ProcessorTestVersionBlockInverted extends TestBase{
 	/**
 	 *	TargetVersion: 1.12
 	 *	Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingBelowDefault() throws IOException {
+	void testTargetVersionBeingBelowDefault() throws Exception {
 		String folder = "TestVersionInverted";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -97,10 +96,10 @@ class ProcessorTestVersionBlockInverted extends TestBase{
 	/**
 	 *	TargetVersion: 1.12.2
 	 *	Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingDefault() throws IOException {
+	void testTargetVersionBeingDefault() throws Exception {
 		String folder = "TestVersionInverted";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -119,10 +118,10 @@ class ProcessorTestVersionBlockInverted extends TestBase{
 	/**
 	 *	TargetVersion: 1.1
 	 *	Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionTooLow() throws IOException {
+	void testTargetVersionTooLow() throws Exception {
 		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestVersionInverted/Actual.java"), StandardCharsets.UTF_8);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {

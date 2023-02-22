@@ -8,20 +8,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Processor {
-	private final Pattern regexBlocks = Pattern.compile("\\/\\/ *# (.+)");
-	private final Pattern regexHashtag = Pattern.compile("## (.+)");
+	private final Pattern regexBlocks = Pattern.compile("^\\s*\\/\\/ *(#+) *(.+)");
+	private final Pattern regexHashtag = Pattern.compile("^\\s*# *(#+) *(.+)");
 	private final Pattern regexPatterns = Pattern.compile("^.+\\/\\/ *@(.+);");
 	
 	private List<String> versions;
 	private Map<String, Map<String, String>> patterns;
 	
-	private VersionState state = VersionState.NONE;
+	private List<VersionState> states = new ArrayList<>();
 
 	/**
 	 * The current version of the preprocessor block that is processed. <br>
-	 * Null if the lines are outside of a preprocessor block.
+	 * Empty if the lines are outside a preprocessor block, filled if inside and the size dictates the nesting layer
 	 */
-	private String currentVersion = null;
+	private List<String> currentVersionsNesting = new ArrayList<>();
 	
 	/**
 	 * If the list should be inverted with the first one being the default
@@ -137,8 +137,9 @@ public class Processor {
 	 * @param lines The lines to preprocess
 	 * @param filename Debug filename for errors during preprocessing
 	 * @return The preprocessed lines of the file
+	 * @throws Exception 
 	 */
-	public List<String> preprocess(String targetVersion, List<String> lines, String filename, String fileending) {
+	public List<String> preprocess(String targetVersion, List<String> lines, String filename, String fileending) throws Exception {
 		List<String> out = new ArrayList<>();
 		this.filename = filename;
 		this.linecount = 0;
@@ -162,7 +163,7 @@ public class Processor {
 		return "accesswidener".equals(fileending);
 	}
 	
-	private String preprocessVersionBlock(String line, String targetVersion, boolean useHashTag) {
+	private String preprocessVersionBlock(String line, String targetVersion, boolean useHashTag) throws Exception {
 		if (updateCurrentVersion(line, useHashTag)) {
 			updateEnabled(targetVersion);
 			return line;
@@ -172,11 +173,11 @@ public class Processor {
 	
 	/**
 	 * Updates the enabled status for the current block
-	 * If the target version is smaller or equal than the {@link #currentVersion}, {@link #versionEnabled} will be true. (If {@link #inverted} is false)
+	 * If the target version is smaller or equal than the {@link #currentVersionsNesting}, {@link #versionEnabled} will be true. (If {@link #inverted} is false)
 	 * @param targetVersion
 	 */
 	private void updateEnabled(String targetVersion) {
-		if(currentVersion == null) { // Check if we are outside a version block
+		if(currentVersionsNesting.size() == 0) { // Check if we are outside a version block
 			versionEnabled = true;
 			return;
 		}
@@ -184,16 +185,19 @@ public class Processor {
 			versionEnabled = false;
 			return;
 		}
-		if (state == VersionState.FOUND) { // Check if the target version was already found
+		if (states.get(states.size()-1) == VersionState.FOUND) { // Check if the target version was already found
 			versionEnabled = false;
 			return;
 		}
-		else if (state == VersionState.NONE) {
+		else if (states.get(states.size()-1) == VersionState.NONE) {
 			if ("def".equals(targetVersion)) { // Set the default version as the target version
 				targetVersion = getDefault();
 			}
 			// Getting the target and current index in the version. The higher the index the
 			// "lower" the mc version
+			
+			String currentVersion = currentVersionsNesting.get(currentVersionsNesting.size()-1);
+			
 			int targetIndex = versions.indexOf(targetVersion);
 			int currentIndex = versions.indexOf(currentVersion);
 
@@ -210,7 +214,7 @@ public class Processor {
 				versionEnabled = false;
 			}
 			else {								// If the targetIndex is equal or smaller than the currentIndex
-				state = VersionState.FOUND;
+				states.set(states.size()-1, VersionState.FOUND);
 				versionEnabled = true;
 			}
 		}
@@ -237,13 +241,14 @@ public class Processor {
 	}
 
 	/**
-	 * If the line contains any version block statements detected by {@linkplain #regexBlocks}, the {@link #currentVersion} will be updated
+	 * If the line contains any version block statements detected by {@linkplain #regexBlocks}, the {@link #currentVersionsNesting} will be updated
 	 * 
 	 * @param line The line to check
 	 * @param useHashTag 
 	 * @return If the line contains a versionBlock statement
+	 * @throws Exception 
 	 */
-	private boolean updateCurrentVersion(String line, boolean useHashTag) {
+	private boolean updateCurrentVersion(String line, boolean useHashTag) throws Exception {
 		// Block detection
 		Matcher match;
 		if(useHashTag)
@@ -253,23 +258,42 @@ public class Processor {
 		
 		
 		if (match.find()) {
-			String detectedVersion = match.group(1);
+			String detectedVersion = match.group(2);
+			int nesting = match.group(1).length();
 			
 			if (detectedVersion.equalsIgnoreCase("end")) {	// Process end
-				state = VersionState.NONE;
-				currentVersion = null;
+				try {
+					currentVersionsNesting.remove(currentVersionsNesting.size()-1);
+					states.remove(states.size()-1);
+				} catch (IndexOutOfBoundsException e) {
+					System.err.println(String.format("Unexpected 'end' found in line %s in %s", line, filename));
+					return false;
+				}
 				return true;
 			}
 			else if(detectedVersion.equalsIgnoreCase("def")) { // Process default version
-				currentVersion = getDefault();
+				nestVersion(getDefault(), nesting, nesting);
 				return true;
 			}
 			else {
-				currentVersion = detectedVersion;
+				nestVersion(detectedVersion, nesting, nesting);
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	private void nestVersion(String ver, int nesting, int linenumber) throws Exception {
+		if (currentVersionsNesting.size() < nesting) {
+			
+			currentVersionsNesting.add(ver);
+			states.add(VersionState.NONE);
+			
+		} else if(currentVersionsNesting.size() > nesting) {
+			throw new Exception(String.format("Missing an end for nesting in line %s in %s", linenumber, filename));
+		} else {
+			currentVersionsNesting.set(currentVersionsNesting.size()-1, ver);
+		}
 	}
 	
 	private String preprocessPattern(String line, String targetVersion) {

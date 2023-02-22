@@ -75,6 +75,9 @@ public class TaskPreprocessBase extends DefaultTask {
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new RuntimeException("Could not write to filesystem.", e);
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+				return;
 			}
 		});
 
