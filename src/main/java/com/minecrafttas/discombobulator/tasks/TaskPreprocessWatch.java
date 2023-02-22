@@ -139,6 +139,9 @@ public class TaskPreprocessWatch extends DefaultTask {
 					System.out.println(String.format("Processed %s in %s", path.getFileName(), version));
 				} catch (IOException e) {
 					e.printStackTrace();
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+					return;
 				}
 			}
 

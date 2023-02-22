@@ -3,7 +3,6 @@ package com.minecrafttas.discombobulator.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,10 +36,10 @@ class ProcessorTestVersionBlock extends TestBase{
 	/**
 	 * TargetVersion: 1.18.1
 	 * Expected: 1.18.1
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingExact() throws IOException {
+	void testTargetVersionBeingExact() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.18.1.txt";
@@ -53,16 +52,16 @@ class ProcessorTestVersionBlock extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.16.5
 	 *	Expected: 1.16.1
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingAbove() throws IOException {
+	void testTargetVersionBeingAbove() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.1.txt";
@@ -75,16 +74,16 @@ class ProcessorTestVersionBlock extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: infinity
 	 *	Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingAboveDefault() throws IOException {
+	void testTargetVersionBeingAboveDefault() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.1.txt";
@@ -97,16 +96,16 @@ class ProcessorTestVersionBlock extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.14.4
 	 *	Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	@Test
-	void testTargetVersionBeingDefault() throws IOException {
+	void testTargetVersionBeingDefault() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.1.txt";
@@ -119,16 +118,16 @@ class ProcessorTestVersionBlock extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.21
 	 *	Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionTooHigh() throws IOException {
+	void testTargetVersionTooHigh() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = null;
@@ -146,10 +145,10 @@ class ProcessorTestVersionBlock extends TestBase{
 	/**
 	 *	TargetVersion: 1.16.1
 	 *	Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNonExistingVersion() throws IOException {
+	void testNonExistingVersion() throws Exception {
 		String folder = "TestVersionFail";
 		String actualName = "Actual.java";
 		String expectedName = null;
@@ -167,10 +166,10 @@ class ProcessorTestVersionBlock extends TestBase{
 	/**
 	 * TargetVersion: null
 	 * Expected: All comment out
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNoTargetVersion() throws IOException {
+	void testNoTargetVersion() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "ExpectedNone.txt";
@@ -183,7 +182,7 @@ class ProcessorTestVersionBlock extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 }

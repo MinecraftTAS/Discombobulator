@@ -1,20 +1,17 @@
 package com.minecrafttas.discombobulator.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
-import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
 import com.minecrafttas.discombobulator.Processor;
+import com.minecrafttas.discombobulator.utils.Pair;
 
-class ProcessorTestAC {
+class ProcessorTestAC extends TestBase{
 
 	private List<String> allVersions = Arrays.asList(
 			"1.20.0",
@@ -37,17 +34,21 @@ class ProcessorTestAC {
 	/**
 	 * TargetVersion: 1.14.4
 	 * Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	@Test
-	void testTargetVersionBeingExact() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/test.accesswidener"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/Expected1.txt"), StandardCharsets.UTF_8);
+	void testTargetVersionBeingExact() throws Exception {
+		String folder = "TestAccesswidener";
+		String actualName = "test.accesswidener";
+		String expectedName = "Expected1.14.4.txt";
+		String targetVersion = "1.14.4";
 		
-		List<String> linesActual = processor.preprocess("1.14.4", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestAccesswidener/test.accesswidener"));
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}
@@ -55,17 +56,21 @@ class ProcessorTestAC {
 	/**
 	 * TargetVersion: 1.18.1
 	 * Expected: 1.16.1
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingAbove() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/test.accesswidener"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/Expected2.txt"), StandardCharsets.UTF_8);
+	void testTargetVersionBeingAbove() throws Exception {
+		String folder = "TestAccesswidener";
+		String actualName = "test.accesswidener";
+		String expectedName = "Expected1.16.1.txt";
+		String targetVersion = "1.18.1";
 		
-		List<String> linesActual = processor.preprocess("1.18.1", linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestAccesswidener/test.accesswidener"));
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}
@@ -73,17 +78,21 @@ class ProcessorTestAC {
 	/**
 	 * TargetVersion: Null
 	 * Expected: None
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingNull() throws IOException {
-		List<String> linesBase = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/test.accesswidener"), StandardCharsets.UTF_8);
-		List<String> linesExpected = FileUtils.readLines(new File("src/test/resources/TestAccesswidener/Expected3.txt"), StandardCharsets.UTF_8);
+	void testTargetVersionBeingNull() throws Exception {
+		String folder = "TestAccesswidener";
+		String actualName = "test.accesswidener";
+		String expectedName = "ExpectedNone.txt";
+		String targetVersion = null;
 		
-		List<String> linesActual = processor.preprocess(null, linesBase, "Actual", FileNameUtils.getExtension("src/test/resources/TestAccesswidener/test.accesswidener"));
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", linesExpected);
+		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
 	}

@@ -2,7 +2,6 @@ package com.minecrafttas.discombobulator.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,15 +35,14 @@ class TestVersionNesting extends TestBase {
 	/**
 	 * TargetVersion: 1.16.1
 	 * Expected: 1.16.1 only
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	@Disabled("NotImplemented")
-	void testNoTargetVersion() throws IOException {
+	void testTargetVersion() throws Exception {
 		String folder = "TestNesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.1.txt";
-		String targetVersion = null;
+		String targetVersion = "1.16.1";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
@@ -53,7 +51,29 @@ class TestVersionNesting extends TestBase {
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
-
+	
+	/**
+	 * TargetVersion: 1.16.5
+	 * Expected: 1.16.1 and 1.16.5
+	 * @throws Exception
+	 */
+	@Test
+	void testTargetAndNestingVersion() throws Exception {
+		String folder = "TestNesting";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.16.5.txt";
+		String targetVersion = "1.16.5";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+	}
+	
 }

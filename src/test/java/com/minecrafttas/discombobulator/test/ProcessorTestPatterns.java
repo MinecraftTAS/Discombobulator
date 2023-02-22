@@ -2,7 +2,6 @@ package com.minecrafttas.discombobulator.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +38,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.14.4
 	 * Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern1() throws IOException {
+	void testPattern1() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.4.txt";
@@ -61,10 +60,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.15.2
 	 * Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern2() throws IOException {
+	void testPattern2() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.4.txt";
@@ -83,10 +82,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.12.2
 	 * Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern3() throws IOException {
+	void testPattern3() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -105,10 +104,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.11.2
 	 * Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern4() throws IOException {
+	void testPattern4() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -127,10 +126,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.14.2
 	 * Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNonExistingPattern() throws IOException {
+	void testNonExistingPattern() throws Exception {
 		String folder = "TestPatternFail";
 		String actualName = "Actual3.java";
 		String expectedName = null;
