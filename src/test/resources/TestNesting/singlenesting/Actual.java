@@ -1,4 +1,4 @@
-package TestNesting.first;
+package TestNesting.singlenesting;
 
 public class Actual {
 	@SuppressWarnings("unused")
@@ -12,7 +12,7 @@ public class Actual {
 		i = 4;
 		// ## end
 		//# def
-//$$		i = 1;
+		i = 1;
 		//# end
 		
 	}

@@ -104,7 +104,56 @@ public class Processor {
 	 * <p>Blocks start with a //# mcversion and end with a //# end. If the targeted version is not defined in the block, the next lowest version will be chosen for preprocessing (e.g. target is 1.11, doesn't exist, so 1.9.4 block will be preprocessed).<br>
 	 * You can define a default block that defaults to the lowest version you specified (e.g. 1.9.2 is lower than 1.9.4, no other version is lower, so it uses default). <br>
 	 * 
-	 * <p>You can define these blocks out of order (e.g. first 1.9.4 then 1.12.2), but the order is ultimately defined in the build.gradle under discombobulator.
+	 * <p>You can't define these blocks out of order (e.g. first 1.9.4 then 1.12.2)... This will lead to some unintended side effects.
+	 * 
+	 * <h3>Nesting</h3>
+	 * 
+	 * <p>Sometimes you have a lot of changes in one version but a tiny amount is added in the following versions. In these cases, you would need to copy all the large changes again into the newest version:
+	 * 
+	 * <pre>
+	 * //# 1.16.5
+	 * New things in 1.16.5
+	 * 
+	 * New things in 1.16.1
+	 * that are a bit longer
+	 * than the changes in
+	 * 1.16.5
+	 * 
+	 * //# 1.16.1
+	 * New things in 1.16.1
+	 * that are a bit longer
+	 * than the changes in
+	 * 1.16.5
+	 * //# end
+	 * </pre>
+	 * 
+	 * <p>Here you need to double the code to achieve your goal. An easier way can be achieved with nesting.
+	 * <p>You can define a nested block inside a version block by adding hashtags to the definition:
+	 * 
+	 * <pre>
+	 * 
+	 * //# 1.16.1
+	 * New things in 1.16.1
+	 * that are a bit longer
+	 * than the changes in
+	 * 1.16.5
+	 * 
+	 * //## 1.16.5		<-- 2 hashtags define the nested version
+	 * New things in 1.16.5
+	 * //## end			<-- The end of the nested block is defined with 2 hashtags as well
+	 * 
+	 * //# end
+	 * </pre>
+	 * 
+	 * <p>To nest inside a nesting block you can add more hashtags.
+	 * 
+	 * <p>Some rules to follow:
+	 * <ul>
+	 * <li>Every nested block needs an 'end' statement</li>
+	 * <li>The nested version can't be lower (if inverted, higher) than the parent version.<br>
+	 * In the example above, you can't nest 1.15.2 inside a 1.16.1 block.</li>
+	 * <li>You cannot skip nesting levels. Defining level 3 nesting after a level 1 nesting is not allowed</li>
+	 * </ul>
 	 * 
 	 * <h2>Patterns</h2>
 	 * Patterns are defined in the build.gradle:
@@ -245,6 +294,7 @@ public class Processor {
 	 * 
 	 * @param line The line to check
 	 * @param useHashTag 
+	 * @param linecount2 
 	 * @return If the line contains a versionBlock statement
 	 * @throws Exception 
 	 */
@@ -259,43 +309,79 @@ public class Processor {
 		
 		if (match.find()) {
 			String detectedVersion = match.group(2);
-			int nesting = match.group(1).length();
+			int nestingLevel = match.group(1).length();
 			
 			if (detectedVersion.equalsIgnoreCase("end")) {	// Process end
-				try {
-					currentVersionsNesting.remove(currentVersionsNesting.size()-1);
-					states.remove(states.size()-1);
-				} catch (IndexOutOfBoundsException e) {
-					System.err.println(String.format("Unexpected 'end' found in line %s in %s", line, filename));
-					return false;
+				
+				if(currentVersionsNesting.isEmpty()) {
+					throw new Exception(String.format("Unexpected 'end' found in line %s in %s", linecount, filename));
 				}
+				
+				if(nestingLevel == currentVersionsNesting.size()) { 				// If the nesting level of the end is actually the one for this nesting block
+					currentVersionsNesting.remove(currentVersionsNesting.size() - 1); // Return to previous nesting statement
+					states.remove(states.size() - 1); // Return states to previous nesting statement
+				} else {
+					throw new Exception(String.format("Unexpected 'end' in nested block found in line %s in %s", linecount, filename));
+				}
+				
 				return true;
 			}
 			else if(detectedVersion.equalsIgnoreCase("def")) { // Process default version
-				nestVersion(getDefault(), nesting, nesting);
+				nestVersion(getDefault(), nestingLevel);
 				return true;
 			}
 			else {
-				nestVersion(detectedVersion, nesting, nesting);
+				nestVersion(detectedVersion, nestingLevel);
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private void nestVersion(String ver, int nesting, int linenumber) throws Exception {
-		if (currentVersionsNesting.size() < nesting) {
+	/**
+	 * Applies nesting levels to {@link #currentVersionsNesting}
+	 * @param newVersion
+	 * @param nestingLevel
+	 * @throws Exception
+	 */
+	private void nestVersion(String newVersion, int nestingLevel) throws Exception {
+		
+		if (currentVersionsNesting.size()+1 == nestingLevel) {
 			
-			currentVersionsNesting.add(ver);
+			checkForNestingErrors(newVersion, nestingLevel);
+			
+			currentVersionsNesting.add(newVersion);
 			states.add(VersionState.NONE);
-			
-		} else if(currentVersionsNesting.size() > nesting) {
-			throw new Exception(String.format("Missing an end for nesting in line %s in %s", linenumber, filename));
-		} else {
-			currentVersionsNesting.set(currentVersionsNesting.size()-1, ver);
+		} 
+		else if(currentVersionsNesting.size()-1 == nestingLevel) {
+			throw new Exception(String.format("Missing an end for nesting before line %s in %s", linecount, filename));
+		} 
+		else if(currentVersionsNesting.size() == nestingLevel) {
+			currentVersionsNesting.set(currentVersionsNesting.size()-1, newVersion);
+		}
+		else {
+			throw new Exception(String.format("Unexpected nesting level in line %s in %s", linecount, filename));
 		}
 	}
 	
+	private void checkForNestingErrors(String ver, int nesting) throws Exception{
+		
+		if(currentVersionsNesting.isEmpty())
+			return;
+		
+		String currentVersion = currentVersionsNesting.get(currentVersionsNesting.size()-1);
+		
+		int targetIndex = versions.indexOf(ver);
+		int currentIndex = versions.indexOf(currentVersion);
+		
+		if(targetIndex>currentIndex && !inverted) {
+			throw new Exception(String.format("The version in the nesting block is smaller than in the parent block. Nested: %s, Parent: %s, Line: %s, File: %s", ver, currentVersion, linecount, filename));
+		}
+		else if(targetIndex<currentIndex && inverted) {
+			throw new Exception(String.format("The version in the nesting block is greater than in the parent block. Nested: %s, Parent: %s, Line: %s, File: %s", ver, currentVersion, linecount, filename));
+		}
+	}
+
 	private String preprocessPattern(String line, String targetVersion) {
 		
 		Matcher match = this.regexPatterns.matcher(line);

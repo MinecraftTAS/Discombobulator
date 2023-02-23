@@ -1,18 +1,18 @@
-package TestNesting.second;
+package TestNesting.triplenestinginverted;
 
 public class Actual {
 	@SuppressWarnings("unused")
 	public void nestingTest() {
 		int i;
-		// # 1.16.1
+		// # 1.12
 		i = 2;
-		// Code for 1.16.1
-			// ## 1.16.5
-//$$			int c = 3;
-				// ### 1.18.2
+		// Code for 1.12
+			// ## 1.11.2
+			int c = 3;
+				// ### 1.7.10
 //$$					// Oh no
-				// ### 1.17.1
-//$$					// Triple nesting O_o
+				// ### 1.8.9
+					// Triple nesting O_o
 				// ### end
 			// ## end
 		//# def

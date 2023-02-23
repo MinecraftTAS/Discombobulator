@@ -185,4 +185,24 @@ class ProcessorTestVersionBlock extends TestBase{
 		assertEquals(expected, actual);
 	}
 	
+	/**
+	 * TargetVersion: null
+	 * Expected: All comment out
+	 * @throws Exception
+	 */
+	@Test
+	void testEndTooMuch() throws Exception {
+		String folder = "TestVersionFail";
+		String actualName = "Actual2.java";
+		String expectedName = null;
+		String targetVersion = null;
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Unexpected 'end' found in line 11 in Actual", exception.getMessage());
+	}
 }

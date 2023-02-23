@@ -1,15 +1,16 @@
-package TestNesting.first;
+package TestNesting.errorsinverted;
 
-public class Actual {
+public class Actual3 {
 	@SuppressWarnings("unused")
 	public void nestingTest() {
 		int i;
-		// # 1.16.1
+		// # 1.12
 		i = 2;
-		// Code for 1.16.1
-		// ## 1.16.5
+		// Code for 1.12
+		// ## 1.11.2
 		int c = 3;
 		i = 4;
+		// ## end
 		// ## end
 		//# def
 		i = 1;

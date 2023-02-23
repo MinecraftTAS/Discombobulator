@@ -38,7 +38,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTargetVersion() throws Exception {
-		String folder = "TestNesting/first";
+		String folder = "TestNesting/singlenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.1.txt";
 		String targetVersion = "1.16.1";
@@ -60,7 +60,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTargetAndNestingVersion() throws Exception {
-		String folder = "TestNesting/first";
+		String folder = "TestNesting/singlenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.5.txt";
 		String targetVersion = "1.16.5";
@@ -82,7 +82,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTargetAndNestingVersionAbove() throws Exception {
-		String folder = "TestNesting/first";
+		String folder = "TestNesting/singlenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.5.txt";
 		String targetVersion = "1.17.1";
@@ -104,7 +104,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTargetAndNestingDefault() throws Exception {
-		String folder = "TestNesting/first";
+		String folder = "TestNesting/singlenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.4.txt";
 		String targetVersion = "1.14.4";
@@ -128,7 +128,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTripleNesting() throws Exception {
-		String folder = "TestNesting/second";
+		String folder = "TestNesting/triplenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.1.txt";
 		String targetVersion = "1.16.1";
@@ -150,7 +150,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTripleNesting2() throws Exception {
-		String folder = "TestNesting/second";
+		String folder = "TestNesting/triplenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.5.txt";
 		String targetVersion = "1.16.5";
@@ -172,7 +172,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTripleNesting3() throws Exception {
-		String folder = "TestNesting/second";
+		String folder = "TestNesting/triplenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.17.1.txt";
 		String targetVersion = "1.17.1";
@@ -194,7 +194,7 @@ class TestVersionNesting extends TestBase {
 	 */
 	@Test
 	void testTripleNesting4() throws Exception {
-		String folder = "TestNesting/second";
+		String folder = "TestNesting/triplenesting";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.18.2.txt";
 		String targetVersion = "1.18.2";
@@ -207,5 +207,129 @@ class TestVersionNesting extends TestBase {
 		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
+	}
+	
+	// =================================== Errors
+	
+	/**
+	 * Default version in nesting fail
+	 * @throws Exception
+	 */
+	@Test
+	void testDefaultInNesting() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		});
+		
+		
+		assertEquals("The version in the nesting block is smaller than in the parent block. Nested: 1.14.4, Parent: 1.16.1, Line: 10, File: Actual", exception.getMessage());
+	}
+	
+	/**
+	 * Nesting version lower than parent fail
+	 * @throws Exception
+	 */
+	@Test
+	void testOneBelowParentInNesting() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual2.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		
+		assertEquals("The version in the nesting block is smaller than in the parent block. Nested: infinity, Parent: 1.20.0, Line: 10, File: Actual2.java", exception.getMessage());
+	}
+	
+	/**
+	 * Test additional end in nesting
+	 * @throws Exception
+	 */
+	@Test
+	void testOneEndTooMuch() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual3.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Unexpected 'end' in nested block found in line 14 in Actual3.java", exception.getMessage());
+	}
+	
+	/**
+	 * Test missing end in nesting
+	 * @throws Exception
+	 */
+	@Test
+	void testOneEndMissing() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual4.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Missing an end for nesting before line 13 in Actual4.java", exception.getMessage());
+	}
+	
+	/**
+	 * Test skipping a nesting level downwards
+	 * @throws Exception
+	 */
+	@Test
+	void testSkippingNestingDown() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual5.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Unexpected nesting level in line 10 in Actual5.java", exception.getMessage());
+	}
+	
+	/**
+	 * Test skipping a nesting level upwards
+	 * @throws Exception
+	 */
+	@Test
+	void testSkippingNestingUp() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual6.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Unexpected nesting level in line 14 in Actual6.java", exception.getMessage());
 	}
 }

@@ -1,4 +1,4 @@
-package TestNesting.second;
+package TestNesting.triplenesting;
 
 public class Actual {
 	@SuppressWarnings("unused")
