@@ -7,7 +7,7 @@ public class ClientTest implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		System.out.println("Pancake tampered with your client");
-		
+		// How did we get here
 	}
 
 }
