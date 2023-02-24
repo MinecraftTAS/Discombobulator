@@ -1,0 +1,53 @@
+package TestNesting.ahhhhh;
+
+public class Actual {
+	private void test() {
+		// Clear global and future entities
+					// # 1.17.1
+					
+					// # def
+						// ## 1.16.1
+//$$					level.toAddAfterTick.clear();
+						// ## end
+//$$					level.globalEntities.clear();
+					// # end
+					
+					// # 1.17.1
+					level.entityTickList = new EntityTickList();
+					
+					ArrayList<Entity> temp = new ArrayList<>();
+					level.getAllEntities().forEach(c -> {
+						temp.add(c);
+					});
+					for (Entity entity : temp) {
+						if (entity == null)
+							continue;
+						entity.remove(RemovalReason.UNLOADED_WITH_PLAYER);
+					}
+					temp.clear();
+					
+					PersistentEntitySectionManager<Entity> entityManager = level.entityManager;
+					EntityStorage entityStorage = (EntityStorage) entityManager.permanentStorage;
+					entityStorage.worker.pendingWrites.clear();
+					entityManager.knownUuids.clear();
+					entityManager.sectionStorage.sectionIds.clear();
+					entityManager.sectionStorage.sections.clear();
+					entityManager.chunkVisibility.clear();
+					entityManager.chunkLoadStatuses.clear();
+					entityManager.loadingInbox.clear();
+					entityManager.chunksToUnload.clear();
+					
+					for (Entity entity : entityManager.visibleEntityStorage.getAllEntities())
+						entityManager.visibleEntityStorage.remove(entity);
+					
+					for (RegionFile file : entityStorage.worker.storage.regionCache.values())
+						file.close();
+					entityStorage.worker.storage.regionCache.clear();
+					// # def
+					// Despawn existing entities
+					for (Entity entity : new ArrayList<>(level.entitiesById.values()))
+						if (entity != null)
+							level.despawn(entity);
+					// # end
+	}
+}
