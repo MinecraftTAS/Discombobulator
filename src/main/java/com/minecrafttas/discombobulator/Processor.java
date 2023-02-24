@@ -38,6 +38,7 @@ public class Processor {
 	 */
 	private int linecount = 0;
 	private boolean versionEnabled = true;
+	private boolean nestingReturn = false;
 	
 	/**
 	 * Creates a new processor. The default will be the lowest version.
@@ -140,7 +141,7 @@ public class Processor {
 	 * 
 	 * //## 1.16.5		<-- 2 hashtags define the nested version
 	 * New things in 1.16.5
-	 * //## end			<-- The end of the nested block is defined with 2 hashtags as well
+	 * //## end		<-- The end of the nested block is defined with 2 hashtags as well
 	 * 
 	 * //# end
 	 * </pre>
@@ -153,6 +154,7 @@ public class Processor {
 	 * <li>The nested version can't be lower (if inverted, higher) than the parent version.<br>
 	 * In the example above, you can't nest 1.15.2 inside a 1.16.1 block.</li>
 	 * <li>You cannot skip nesting levels. Defining level 3 nesting after a level 1 nesting is not allowed</li>
+	 * <li>Using def in a nested block will use the parent version</li>
 	 * </ul>
 	 * 
 	 * <h2>Patterns</h2>
@@ -189,6 +191,8 @@ public class Processor {
 	 * @throws Exception 
 	 */
 	public List<String> preprocess(String targetVersion, List<String> lines, String filename, String fileending) throws Exception {
+		nestingReturn = false;
+		
 		List<String> out = new ArrayList<>();
 		this.filename = filename;
 		this.linecount = 0;
@@ -230,15 +234,36 @@ public class Processor {
 			versionEnabled = true;
 			return;
 		}
-		if(targetVersion == null) {
+		if(targetVersion == null) {	// Check if nothing should be enabled and the target version is null
 			versionEnabled = false;
 			return;
 		}
-		if (states.get(states.size()-1) == VersionState.FOUND) { // Check if the target version was already found
-			versionEnabled = false;
-			return;
+		
+		/*Interpret the current version state*/
+		VersionState state = states.get(states.size()-1);
+		
+		if (state == VersionState.ENABLED) { // Check if the target version was already found
+			if(!nestingReturn) {
+				states.set(states.size()-1, VersionState.DISABLED);
+				versionEnabled = false;
+			} else {
+				nestingReturn = false;
+				versionEnabled = true;
+			}
 		}
-		else if (states.get(states.size()-1) == VersionState.NONE) {
+		else if(state == VersionState.DISABLED) {
+			if(nestingReturn) {	// We already searched when we are returning from nesting
+				nestingReturn = false;
+				return;
+			}
+			versionEnabled = false;
+		}
+		else if (state == VersionState.SEARCHING) {
+			if(nestingReturn) {	// We already searched when we are returning from nesting
+				nestingReturn = false;
+				return;
+			}
+			
 			if ("def".equals(targetVersion)) { // Set the default version as the target version
 				targetVersion = getDefault();
 			}
@@ -263,7 +288,7 @@ public class Processor {
 				versionEnabled = false;
 			}
 			else {								// If the targetIndex is equal or smaller than the currentIndex
-				states.set(states.size()-1, VersionState.FOUND);
+				states.set(states.size()-1, VersionState.ENABLED);
 				versionEnabled = true;
 			}
 		}
@@ -294,7 +319,6 @@ public class Processor {
 	 * 
 	 * @param line The line to check
 	 * @param useHashTag 
-	 * @param linecount2 
 	 * @return If the line contains a versionBlock statement
 	 * @throws Exception 
 	 */
@@ -320,6 +344,10 @@ public class Processor {
 				if(nestingLevel == currentVersionsNesting.size()) { 				// If the nesting level of the end is actually the one for this nesting block
 					currentVersionsNesting.remove(currentVersionsNesting.size() - 1); // Return to previous nesting statement
 					states.remove(states.size() - 1); // Return states to previous nesting statement
+					
+					if(!currentVersionsNesting.isEmpty()) {
+						nestingReturn = true;
+					}
 				} else {
 					throw new Exception(String.format("Unexpected 'end' in nested block found in line %s in %s", linecount, filename));
 				}
@@ -349,9 +377,13 @@ public class Processor {
 		if (currentVersionsNesting.size()+1 == nestingLevel) {
 			
 			checkForNestingErrors(newVersion, nestingLevel);
-			
+
 			currentVersionsNesting.add(newVersion);
-			states.add(VersionState.NONE);
+			if(states.isEmpty() || states.get(states.size()-1) == VersionState.ENABLED) {
+				states.add(VersionState.SEARCHING);
+			} else {
+				states.add(VersionState.DISABLED);
+			}
 		} 
 		else if(currentVersionsNesting.size()-1 == nestingLevel) {
 			throw new Exception(String.format("Missing an end for nesting before line %s in %s", linecount, filename));
@@ -449,7 +481,11 @@ public class Processor {
 	 * @return The default version
 	 */
 	private String getDefault() {
-		return versions.get(getDefaultIndex());
+		if(currentVersionsNesting.size()==1) {
+			return versions.get(getDefaultIndex());
+		} else {
+			return currentVersionsNesting.get(currentVersionsNesting.size()-2); // Get default version
+		}
 	}
 	
 	/**
@@ -462,7 +498,6 @@ public class Processor {
 	/**
 	 * The processor tries to search for a matching version in the lines.<br>
 	 * Under certain circumstances the version changes depending on the state.
-	 * <p>(Yes this enum can be swapped out for a boolean but I think this is better for understanding)
 	 * 
 	 * @author Scribble
 	 *
@@ -471,11 +506,12 @@ public class Processor {
 		/**
 		 * The "none" state indicates that the target version does not match the current version and we still have to look for a suitable version.
 		 */
-		NONE,
+		SEARCHING,
 		/**
 		 * The "found" state indicates that the target version has been found and all versions beyond that can be disabled.
 		 */
-		FOUND
+		ENABLED,
+		DISABLED
 	}
 	
 	/**

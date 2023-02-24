@@ -11,7 +11,11 @@ public class Actual {
 		int c = 3;
 		i = 4;
 		// ## end
+		i = 6;
 		//# def
+		// ## 1.15.2
+		i = 3;
+		// ## end
 		i = 1;
 		//# end
 		

@@ -119,6 +119,45 @@ class TestVersionNesting extends TestBase {
 		assertEquals(expected, actual);
 	}
 	
+	/**
+	 * TargetVersion: 1.15.2
+	 * Expected: 1.14.4, 1.15.2
+	 * @throws Exception
+	 */
+	@Test
+	void testNestingInDefault() throws Exception {
+		String folder = "TestNesting/singlenesting";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.15.2.txt";
+		String targetVersion = "1.15.2";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	void testMultipleVersionBlocksAfterNesting() throws Exception {
+		String folder = "TestNesting/ahhhhh";
+		String actualName = "Actual.txt";
+		String expectedName = "Expected.txt";
+		String targetVersion = "1.19.3";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+	}
+	
 	// =======================================================
 	
 	/**
