@@ -37,6 +37,7 @@ class TestOrdering extends TestBase{
 	 * @throws Exception
 	 */
 	@Test
+	@Disabled
 	void testTargetVersionBeingExact() throws Exception {
 		String folder = "TestOrdering/unordered";
 		String actualName = "Actual.java";

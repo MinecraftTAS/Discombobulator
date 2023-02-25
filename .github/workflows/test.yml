@@ -1,4 +1,4 @@
-name: Test Discombobulator
+name: test
 
 on:
   push:
