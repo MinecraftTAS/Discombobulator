@@ -40,7 +40,8 @@ name: report
 on:
   workflow_run:
     workflows: [test]
-    types: [completed]
+    types: 
+      - completed
     
 permissions:
   checks: write
