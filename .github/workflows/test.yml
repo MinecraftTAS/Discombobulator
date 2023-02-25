@@ -1,12 +1,9 @@
-name: Test Discombobulator
+name: test
 
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     branches:
-      - main
+      - latest
       - develop
       
 
