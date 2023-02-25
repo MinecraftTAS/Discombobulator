@@ -38,7 +38,7 @@ class TestVersionNestingInverted extends TestBase {
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -60,7 +60,7 @@ class TestVersionNestingInverted extends TestBase {
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -82,7 +82,7 @@ class TestVersionNestingInverted extends TestBase {
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -104,7 +104,7 @@ class TestVersionNestingInverted extends TestBase {
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -128,11 +128,11 @@ class TestVersionNestingInverted extends TestBase {
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
 		Exception exception = assertThrows(Exception.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		});
 		
 		
-		assertEquals("The version in the nesting block is greater than in the parent block. Nested: 1.12.2, Parent: 1.12, Line: 10, File: Actual", exception.getMessage());
+		assertEquals("The version in the nesting block is greater than in the parent block. Nested: 1.12.2, Parent: 1.12, Line: 10, File: Actual.java", exception.getMessage());
 	}
 	
 	/**
