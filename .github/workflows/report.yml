@@ -1,7 +1,6 @@
 name: report
 on:
   workflow_run:
-    workflows: ["Test Discombobulator"]
     types: [completed]
     
 permissions:
