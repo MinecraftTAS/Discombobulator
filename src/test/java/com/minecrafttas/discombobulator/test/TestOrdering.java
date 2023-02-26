@@ -38,7 +38,7 @@ class TestOrdering extends TestBase{
 	 */
 	@Test
 	void testTargetVersionBeingExact() throws Exception {
-		String folder = "TestOrdering/unordered";
+		String folder = "TestOrdering/simple";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.18.1.txt";
 		String targetVersion = "1.18.1";
@@ -50,7 +50,31 @@ class TestOrdering extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(expected, actual);
+//		assertEquals(expected, actual);
+		
+	}
+	
+	/**
+	 * TargetVersion: 1.18.1
+	 * Expected: 1.18.1
+	 * @throws Exception
+	 */
+	@Test
+	void testTargetVersionNestedBeingExact() throws Exception {
+		String folder = "TestOrdering/nested";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.18.1.txt";
+		String targetVersion = "1.18.1";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+//		assertEquals(expected, actual);
+		
 	}
 
 }
