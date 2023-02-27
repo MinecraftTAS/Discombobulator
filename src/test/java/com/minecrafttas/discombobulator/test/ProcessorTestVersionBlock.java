@@ -186,8 +186,8 @@ class ProcessorTestVersionBlock extends TestBase{
 	}
 	
 	/**
-	 * TargetVersion: null
-	 * Expected: All comment out
+	 * An additional end
+	 * Expected: Error
 	 * @throws Exception
 	 */
 	@Test

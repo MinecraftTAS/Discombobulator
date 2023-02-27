@@ -1,4 +1,4 @@
-package TestOrdering.unordered;
+package TestOrdering.simple;
 
 public class Actual {
 	//# 1.16.1
