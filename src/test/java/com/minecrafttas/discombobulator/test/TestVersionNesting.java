@@ -175,6 +175,23 @@ class TestVersionNesting extends TestBase {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	void testDefaultInNesting() throws Exception {
+		String folder = "TestNesting/defaultnesting";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.16.1.txt";
+		String targetVersion = "1.16.1";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+	}
+	
 	// =======================================================
 	
 	/**
@@ -266,27 +283,6 @@ class TestVersionNesting extends TestBase {
 	}
 	
 	// =================================== Errors
-	
-	/**
-	 * Default version in nesting fail
-	 * @throws Exception
-	 */
-	@Test
-	void testDefaultInNesting() throws Exception {
-		String folder = "TestNesting/errors";
-		String actualName = "Actual.java";
-		String expectedName = null;
-		String targetVersion = "1.14.4";
-		
-		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
-		
-		Exception exception = assertThrows(Exception.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
-		});
-		
-		
-		assertEquals("The version in the nesting block is smaller than in the parent block. Nested: 1.14.4, Parent: 1.16.1, Line: 10, File: Actual", exception.getMessage());
-	}
 	
 	/**
 	 * Nesting version lower than parent fail
@@ -388,4 +384,6 @@ class TestVersionNesting extends TestBase {
 		
 		assertEquals("Unexpected nesting level in line 14 in Actual6.java", exception.getMessage());
 	}
+	
+	
 }

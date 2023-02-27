@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.minecrafttas.discombobulator.Processor;
@@ -50,7 +49,7 @@ class TestOrdering extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-//		assertEquals(expected, actual);
+		assertEquals(expected, actual);
 		
 	}
 	
@@ -73,7 +72,7 @@ class TestOrdering extends TestBase{
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-//		assertEquals(expected, actual);
+		assertEquals(expected, actual);
 		
 	}
 

@@ -115,27 +115,6 @@ class TestVersionNestingInverted extends TestBase {
 	// =================================== Errors
 	
 	/**
-	 * Default version in nesting fail
-	 * @throws Exception
-	 */
-	@Test
-	void testDefaultInNesting() throws Exception {
-		String folder = "TestNesting/errorsinverted";
-		String actualName = "Actual.java";
-		String expectedName = null;
-		String targetVersion = null;
-		
-		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
-		
-		Exception exception = assertThrows(Exception.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
-		});
-		
-		
-		assertEquals("The version in the nesting block is greater than in the parent block. Nested: 1.12.2, Parent: 1.12, Line: 10, File: Actual.java", exception.getMessage());
-	}
-	
-	/**
 	 * Nesting version lower than parent fail
 	 * @throws Exception
 	 */
