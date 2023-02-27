@@ -1,7 +1,6 @@
 package com.minecrafttas.discombobulator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -233,16 +232,18 @@ public class Processor {
 	 * @return A queue with booleans matching the number of version statements in the version block
 	 */
 	private ConcurrentLinkedQueue<Boolean> generateEnabledQueue(List<String> lines, boolean useHashTag, String targetVersion) {
-		ConcurrentLinkedQueue<Boolean> out = new ConcurrentLinkedQueue<>();
-		if(debugCounter>0) {
-			return out;
-		}
+//		if(debugCounter>0) {
+//			return out;
+//		}
 		VersionBlockList blockList = generateBlockList(lines, linenumber-1, useHashTag, 1).right();
-		blockList.sort();
-		System.out.println("==============\n"+blockList);
+		blockList.sortByVersionIndex();
+		blockList.setEnabledVersion(targetVersion);
+		blockList.sortByAppearence();
+		System.out.println("=======================Target: "+targetVersion+"\n"+blockList);
 		System.out.println("Size:"+blockList.size());
-		debugCounter=blockList.size();
-		return out;
+//		System.out.println(blockList.getQueue());
+//		debugCounter=blockList.size();
+		return blockList.getQueue();
 	}
 	
 	/**
@@ -314,12 +315,21 @@ public class Processor {
 		}
 		return Pair.of(lineCount, blockList);
 	}
+	
+	private int getIndex(String version) {
+		int versionIndex = versions.indexOf(version);
+		if("def".equals(version)) {
+			versionIndex = versions.size()-1;
+		}
+		return versionIndex;
+	}
 
 	private class VersionBlock {
 		private String version;
 		private int index;
 		private List<VersionBlockList> nestedBlockList = new ArrayList<>(); 
 		private int debugLevel;
+		private boolean enabled;
 		
 		public VersionBlock(String version, int index, int level) {
 			this.version = version;
@@ -333,7 +343,7 @@ public class Processor {
 		
 		@Override
 		public String toString() {
-			String out = "   ".repeat(debugLevel-1)+version+"-"+index+"\n";
+			String out = "   ".repeat(debugLevel-1)+version+": "+enabled+"\n";
 			for(VersionBlockList list : nestedBlockList) {
 				out=out.concat(list.toString());
 			}
@@ -348,10 +358,38 @@ public class Processor {
 			return i;
 		}
 		
-		public void sort() {
+		public void sortByVersionIndex() {
 			for(VersionBlockList list : nestedBlockList) {
-				list.sort();
+				list.sortByVersionIndex();
 			}
+		}
+		
+		public int getVersionIndex() {
+			return getIndex(version);
+		}
+		
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public void setEnabledVersion(String targetVersion) {
+			for (VersionBlockList versionBlockList : nestedBlockList) {
+				versionBlockList.setEnabledVersion(targetVersion);
+			}
+		}
+
+		public void sortByAppearence() {
+			for(VersionBlockList list : nestedBlockList) {
+				list.sortByAppearence();
+			}
+		}
+
+		public ConcurrentLinkedQueue<Boolean> getQueue() {
+			ConcurrentLinkedQueue<Boolean> out = new ConcurrentLinkedQueue<>();
+			for (VersionBlockList block : nestedBlockList) {
+				out.addAll(block.getQueue());
+			}
+			return out;
 		}
 	}
 	
@@ -383,27 +421,62 @@ public class Processor {
 			return i;
 		}
 		
-		public void sort() {
+		public void sortByVersionIndex() {
 			blocks.sort((left, right)->{
-				String verLeft = left.version;
-				String verRight = right.version;
-				if("def".equals(verLeft)) {
-					verLeft=versions.get(versions.size()-1);
-				}
-				if("def".equals(verRight)) {
-					verRight=versions.get(versions.size()-1);
-				}
-				int indexLeft = versions.indexOf(verLeft);
-				int indexRight = versions.indexOf(verRight);
-				int compare = Integer.compare(indexLeft, indexRight);
+				int compare = Integer.compare(left.getVersionIndex(), right.getVersionIndex());
 				return compare;
 			});
 			for(VersionBlock block : blocks) {
-				block.sort();
+				block.sortByVersionIndex();
 			}
 		}
+		
+		public void setEnabledVersion(String targetVersion) {
+			int targetIndex = getIndex(targetVersion);
+			boolean found = false;
+			for (VersionBlock block : blocks) {
+				int currentIndex = block.getVersionIndex();
+				
+				if (!inverted) {
+					if (currentIndex < targetIndex && !inverted || currentIndex > targetIndex && inverted) {
+						block.setEnabled(false);
+					} 
+					else if (currentIndex == targetIndex) {
+						block.setEnabled(true);
+						found = true;
+					} else {
+						if (!found) {
+							block.setEnabled(true);
+							found = true;
+						} else {
+							block.setEnabled(false);
+						}
+					}
+				}
+				block.setEnabledVersion(targetVersion);
+			}
+		}
+		
+		public void sortByAppearence() {
+			blocks.sort((left, right)->{
+				int compare = Integer.compare(left.index, right.index);
+				return compare;
+			});
+			for(VersionBlock block : blocks) {
+				block.sortByAppearence();
+			}
+		}
+		
+		public ConcurrentLinkedQueue<Boolean> getQueue(){
+			ConcurrentLinkedQueue<Boolean> out = new ConcurrentLinkedQueue<Boolean>();
+			for(VersionBlock block: blocks) {
+				out.add(block.enabled);
+				out.addAll(block.getQueue());
+			}
+			
+			return out;
+		}
 	}
-
 	
 	private boolean shouldUseHashTag(String fileending) {
 		return "accesswidener".equals(fileending);
