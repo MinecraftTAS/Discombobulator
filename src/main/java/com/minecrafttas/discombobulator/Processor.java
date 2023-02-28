@@ -239,11 +239,11 @@ public class Processor {
     \  /  __/ |  \__ \ | (_) | | | | | |_) | | (_) | (__|   < 
      \/ \___|_|  |___/_|\___/|_| |_| |____/|_|\___/ \___|_|\_\
                                                               
-	========================================================
+	==========================================================
 	
 	*
 	* In this section is everything about version block preprocessing.
-	* I use a LOT of recursion stuff to get this
+	* I use a LOT of recursion stuff to get this working.
 	*/
 
 	/**
@@ -855,7 +855,7 @@ public class Processor {
 		 | |  | (_| | |_| ||  __/ |  | | | \__ \
 		 |_|   \__,_|\__|\__\___|_|  |_| |_|___/
                                                               
-	========================================================
+	==========================================================
 	
 	* Everything related to patterns can be found here.
 	*/
