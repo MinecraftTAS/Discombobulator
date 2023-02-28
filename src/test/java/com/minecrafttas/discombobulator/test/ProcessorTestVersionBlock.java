@@ -205,4 +205,25 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		assertEquals("Unexpected 'end' found in line 11 in Actual2.java", exception.getMessage());
 	}
+	
+	/**
+	 * Duplicate version
+	 * Expected: Error
+	 * @throws Exception
+	 */
+	@Test
+	void testDuplicate() throws Exception {
+		String folder = "TestVersionFail";
+		String actualName = "Actual3.java";
+		String expectedName = null;
+		String targetVersion = null;
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Duplicate version definition 1.16.1 found in line 8 in Actual3.java", exception.getMessage());
+	}
 }
