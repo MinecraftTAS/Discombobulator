@@ -29,7 +29,7 @@ public class TaskPreprocessBase extends DefaultTask {
 		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 		
-		System.out.println(Discombobulator.splash);
+		System.out.println(Discombobulator.getSplash());
 
 		// Prepare list of physical version folders
 		List<Pair<String, String>> versionsConfig = Discombobulator.getVersionPairs();
@@ -75,6 +75,9 @@ public class TaskPreprocessBase extends DefaultTask {
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new RuntimeException("Could not write to filesystem.", e);
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+				return;
 			}
 		});
 

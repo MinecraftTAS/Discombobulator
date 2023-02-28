@@ -3,7 +3,6 @@ package com.minecrafttas.discombobulator.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,10 +36,10 @@ class ProcessorTestVersionBlock extends TestBase{
 	/**
 	 * TargetVersion: 1.18.1
 	 * Expected: 1.18.1
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingExact() throws IOException {
+	void testTargetVersionBeingExact() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.18.1.txt";
@@ -48,21 +47,21 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.16.5
 	 *	Expected: 1.16.1
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingAbove() throws IOException {
+	void testTargetVersionBeingAbove() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.16.1.txt";
@@ -70,21 +69,21 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: infinity
 	 *	Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionBeingAboveDefault() throws IOException {
+	void testTargetVersionBeingAboveDefault() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.1.txt";
@@ -92,21 +91,21 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.14.4
 	 *	Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	@Test
-	void testTargetVersionBeingDefault() throws IOException {
+	void testTargetVersionBeingDefault() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.1.txt";
@@ -114,21 +113,21 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
 	/**
 	 *	TargetVersion: 1.21
 	 *	Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testTargetVersionTooHigh() throws IOException {
+	void testTargetVersionTooHigh() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = null;
@@ -137,7 +136,7 @@ class ProcessorTestVersionBlock extends TestBase{
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		});
 
 		assertEquals("The target version 1.21 was not found", exception.getMessage());
@@ -146,10 +145,10 @@ class ProcessorTestVersionBlock extends TestBase{
 	/**
 	 *	TargetVersion: 1.16.1
 	 *	Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNonExistingVersion() throws IOException {
+	void testNonExistingVersion() throws Exception {
 		String folder = "TestVersionFail";
 		String actualName = "Actual.java";
 		String expectedName = null;
@@ -158,19 +157,19 @@ class ProcessorTestVersionBlock extends TestBase{
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		});
 
-		assertEquals("The specified version CrazyVersionName in Actual in line 6 was not found", exception.getMessage());
+		assertEquals("The specified version CrazyVersionName in Actual.java in line 6 was not found", exception.getMessage());
 	}
 	
 	/**
 	 * TargetVersion: null
 	 * Expected: All comment out
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNoTargetVersion() throws IOException {
+	void testNoTargetVersion() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
 		String expectedName = "ExpectedNone.txt";
@@ -178,12 +177,53 @@ class ProcessorTestVersionBlock extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
 		
-		assertEquals(actual, expected);
+		assertEquals(expected, actual);
 	}
 	
+	/**
+	 * An additional end
+	 * Expected: Error
+	 * @throws Exception
+	 */
+	@Test
+	void testEndTooMuch() throws Exception {
+		String folder = "TestVersionFail";
+		String actualName = "Actual2.java";
+		String expectedName = null;
+		String targetVersion = null;
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Unexpected 'end' found in line 11 in Actual2.java", exception.getMessage());
+	}
+	
+	/**
+	 * Duplicate version
+	 * Expected: Error
+	 * @throws Exception
+	 */
+	@Test
+	void testDuplicate() throws Exception {
+		String folder = "TestVersionFail";
+		String actualName = "Actual3.java";
+		String expectedName = null;
+		String targetVersion = null;
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Duplicate version definition 1.16.1 found in line 8 in Actual3.java", exception.getMessage());
+	}
 }

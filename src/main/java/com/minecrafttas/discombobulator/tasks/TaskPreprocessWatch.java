@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
@@ -18,6 +19,7 @@ import com.minecrafttas.discombobulator.utils.FileWatcher;
 import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 import com.minecrafttas.discombobulator.utils.SocketLock;
+import com.minecrafttas.discombobulator.utils.Triple;
 
 /**
  * This task preprocesses the source code on file change
@@ -27,10 +29,14 @@ import com.minecrafttas.discombobulator.utils.SocketLock;
 public class TaskPreprocessWatch extends DefaultTask {
 
 	private List<FileWatcherThread> threads = new ArrayList<>();
+	
+	private Triple<List<String>, Path, Path> currentFileUpdater = null;
+	
+	private boolean msgSeen = false;
 
 	@TaskAction
 	public void preprocessWatch() {
-		System.out.println(Discombobulator.splash);
+		System.out.println(Discombobulator.getSplash());
 		// Lock port
 		var lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
@@ -57,12 +63,33 @@ public class TaskPreprocessWatch extends DefaultTask {
 			this.watch(version.right(), versions);
 
 		// Wait for user input and cancel the task
+		
+		Scanner sc= new Scanner(System.in);
+		System.out.println("Press ENTER to stop the file watcher");
+		String in;
 		try {
-			System.out.println("Press enter to stop the file watcher");
-			System.in.read();
-		} catch (IOException e) {
-			// don't care
+			while(!(in = sc.nextLine()).isBlank()) {
+				if(!in.isBlank()) {
+					if(currentFileUpdater == null) {
+						System.out.println("No recent file exists...\n");
+						continue;
+					}
+					Path outFile = currentFileUpdater.right();
+					Path inFile = currentFileUpdater.middle();
+					List<String> outLines = currentFileUpdater.left();
+					
+					Discombobulator.pathLock.scheduleAndLock(outFile);
+					Files.createDirectories(outFile.getParent());
+					SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(inFile));
+					currentFileUpdater = null;
+					
+					System.out.println(String.format("Processed the recently edited file %s\n", outFile.getFileName()));
+				}
+			}
+		} catch (IOException e1) {
 		}
+		sc.close();
 		for (FileWatcherThread thread : this.threads)
 			thread.close();
 		lock.unlock();
@@ -113,20 +140,22 @@ public class TaskPreprocessWatch extends DefaultTask {
 					// Iterate through all versions
 					for (Pair<String, Path> subVersion : versions) {
 						// If the version equals the original version, then skip it
-//						if (subVersion.right().equals(file)) {
-//							continue;
-//						}
 
 						// Preprocess the lines
 						String[] split = path.getFileName().toString().split("\\.");
-						List<String> lines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename, split[split.length-1]);
-
+						List<String> outLines = Discombobulator.processor.preprocess(subVersion.left(), inLines, filename, split[split.length-1]);
+						
 						// Write file
 						Path outFile = subVersion.right().resolve(relativeFile);
+						
+						if (subVersion.right().equals(file)) {
+							currentFileUpdater = Triple.of(outLines, path, outFile);
+							continue;
+						}
 
 						schedule.scheduleAndLock(outFile);
 						Files.createDirectories(outFile.getParent());
-						SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+						SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 						Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 					}
 					// Modify this file in base project
@@ -134,11 +163,19 @@ public class TaskPreprocessWatch extends DefaultTask {
 					List<String> lines = Discombobulator.processor.preprocess(null, inLines, filename, split[split.length-1]);
 					Path outFile = new File(TaskPreprocessWatch.this.getProject().getProjectDir(), "src").toPath().toAbsolutePath().resolve(relativeFile);
 					Files.createDirectories(outFile.getParent());
-					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 					Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
 					System.out.println(String.format("Processed %s in %s", path.getFileName(), version));
+					
+					if (msgSeen == false) {
+						System.out.println("Type 1 to also preprocess this file\n");
+						msgSeen = true;
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+					return;
 				}
 			}
 

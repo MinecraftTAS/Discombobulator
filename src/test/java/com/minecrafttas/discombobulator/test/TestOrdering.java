@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.gradle.internal.impldep.org.apache.commons.compress.utils.FileNameUtils;
 import org.junit.jupiter.api.Test;
@@ -12,41 +11,36 @@ import org.junit.jupiter.api.Test;
 import com.minecrafttas.discombobulator.Processor;
 import com.minecrafttas.discombobulator.utils.Pair;
 
-class ProcessorTestPatternsInverted extends TestBase{
-
-	Map<String, Map<String, String>> patterns = Map.of(
-			"GetLevel", Map.of(
-				"def", "level",
-				"1.12.2", "world"
-			),
-			"GetMinecraft", Map.of(
-				"def", "Minecraft.getInstance()",
-				"1.12.2", "Minecraft.getMinecraft()"
-			)
-		);
+class TestOrdering extends TestBase{
 	
 	private List<String> allVersions = Arrays.asList(
+			"1.20.0",
+			"1.19.3",
+			"1.19.2",
+			"1.19.0",
+			"1.18.2",
+			"1.18.1",
+			"1.17.1",
+			"1.16.5",
 			"1.16.1",
+			"infinity",
 			"1.15.2",
-			"1.14.4",
-			"1.13.2",
-			"1.12.2",
-			"1.11.2"
+			"1.14.4"
 	);
+	
+	private Processor processor=new Processor(allVersions, null);
 
-	private Processor processor=new Processor(allVersions, patterns, true);
-	
 	/**
-	 * TargetVersion: 1.14.4
-	 * Expected: 1.14.4
+	 * TargetVersion: 1.18.1
+	 * Expected: 1.18.1
 	 * @throws Exception
 	 */
 	@Test
-	void testPattern1() throws Exception {
-		String folder = "TestPatternsInverted";
+	void testTargetVersionBeingExact() throws Exception {
+		String folder = "TestOrdering/simple";
 		String actualName = "Actual.java";
-		String expectedName = "Expected1.14.4.txt";
-		String targetVersion = "1.14.4";
+		String expectedName = "Expected1.18.1.txt";
+		String targetVersion = "1.18.1";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
@@ -56,19 +50,20 @@ class ProcessorTestPatternsInverted extends TestBase{
 		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
+		
 	}
 	
 	/**
-	 * TargetVersion: 1.13.2
-	 * Expected: 1.14.4
+	 * TargetVersion: 1.18.1
+	 * Expected: 1.18.1
 	 * @throws Exception
 	 */
 	@Test
-	void testPattern2() throws Exception {
-		String folder = "TestPatternsInverted";
+	void testTargetVersionNestedBeingExact() throws Exception {
+		String folder = "TestOrdering/nested";
 		String actualName = "Actual.java";
-		String expectedName = "Expected1.14.4.txt";
-		String targetVersion = "1.13.2";
+		String expectedName = "Expected1.18.1.txt";
+		String targetVersion = "1.18.1";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
@@ -78,19 +73,20 @@ class ProcessorTestPatternsInverted extends TestBase{
 		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
+		
 	}
-	
+
 	/**
-	 * TargetVersion: 1.12.2
-	 * Expected: 1.11.2
+	 * TargetVersion: 1.16.5
+	 * Expected: A lot
 	 * @throws Exception
 	 */
 	@Test
-	void testPattern3() throws Exception {
-		String folder = "TestPatternsInverted";
+	void testMultipleNestingBlocksInOneBlock() throws Exception {
+		String folder = "TestOrdering/verynested";
 		String actualName = "Actual.java";
-		String expectedName = "Expected1.12.2.txt";
-		String targetVersion = "1.11.2";
+		String expectedName = "Expected1.16.5.txt";
+		String targetVersion = "1.16.5";
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
@@ -100,28 +96,6 @@ class ProcessorTestPatternsInverted extends TestBase{
 		String expected = String.join("\n", lines.right());
 		
 		assertEquals(expected, actual);
+		
 	}
-	
-	/**
-	 * TargetVersion: 1.16.1
-	 * Expected: 1.14.4
-	 * @throws Exception
-	 */
-	@Test
-	void testPattern4() throws Exception {
-		String folder = "TestPatternsInverted";
-		String actualName = "Actual.java";
-		String expectedName = "Expected1.14.4.txt";
-		String targetVersion = "1.16.1";
-		
-		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
-		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
-		
-		String actual = String.join("\n", linesActual);
-		String expected = String.join("\n", lines.right());
-		
-		assertEquals(expected, actual);
-	}
-	
 }

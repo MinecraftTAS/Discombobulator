@@ -2,7 +2,6 @@ package com.minecrafttas.discombobulator.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +38,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.14.4
 	 * Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern1() throws IOException {
+	void testPattern1() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.4.txt";
@@ -50,7 +49,7 @@ class ProcessorTestPatterns extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -61,10 +60,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.15.2
 	 * Expected: 1.14.4
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern2() throws IOException {
+	void testPattern2() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.14.4.txt";
@@ -72,7 +71,7 @@ class ProcessorTestPatterns extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -83,10 +82,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.12.2
 	 * Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern3() throws IOException {
+	void testPattern3() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -94,7 +93,7 @@ class ProcessorTestPatterns extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -105,10 +104,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.11.2
 	 * Expected: 1.12.2
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testPattern4() throws IOException {
+	void testPattern4() throws Exception {
 		String folder = "TestPattern";
 		String actualName = "Actual.java";
 		String expectedName = "Expected1.12.2.txt";
@@ -116,7 +115,7 @@ class ProcessorTestPatterns extends TestBase{
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -127,10 +126,10 @@ class ProcessorTestPatterns extends TestBase{
 	/**
 	 * TargetVersion: 1.14.2
 	 * Expected: Fail
-	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Test
-	void testNonExistingPattern() throws IOException {
+	void testNonExistingPattern() throws Exception {
 		String folder = "TestPatternFail";
 		String actualName = "Actual3.java";
 		String expectedName = null;
@@ -139,10 +138,10 @@ class ProcessorTestPatterns extends TestBase{
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 		
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), "Actual", FileNameUtils.getExtension(actualName));
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
 		});
 
-		assertEquals("The specified pattern  GetMinecraft , GetLevel in Actual in line 		Minecraft.getInstance(); // @ GetMinecraft , GetLevel; was not found for any version", exception.getMessage());
+		assertEquals("The specified pattern  GetMinecraft , GetLevel in Actual3.java in line 		Minecraft.getInstance(); // @ GetMinecraft , GetLevel; was not found for any version", exception.getMessage());
 	}
 
 }

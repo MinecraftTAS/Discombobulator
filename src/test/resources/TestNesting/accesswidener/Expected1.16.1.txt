@@ -1,0 +1,11 @@
+## 1.17.1
+## def
+
+### 1.16.1
+### def
+#$$accessible field net/minecraft/server/level/ServerLevel globalEntities Ljava/util/List;
+### end
+
+accessible field net/minecraft/server/level/ServerLevel toAddAfterTick Ljava/util/Queue;
+accessible field net/minecraft/server/level/ServerLevel entitiesById Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+## end
