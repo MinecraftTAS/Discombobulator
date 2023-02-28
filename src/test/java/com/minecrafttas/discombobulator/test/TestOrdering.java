@@ -76,4 +76,26 @@ class TestOrdering extends TestBase{
 		
 	}
 
+	/**
+	 * TargetVersion: 1.16.5
+	 * Expected: A lot
+	 * @throws Exception
+	 */
+	@Test
+	void testMultipleNestingBlocksInOneBlock() throws Exception {
+		String folder = "TestOrdering/verynested";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.16.5.txt";
+		String targetVersion = "1.16.5";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+		
+	}
 }

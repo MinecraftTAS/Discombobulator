@@ -385,5 +385,43 @@ class TestVersionNesting extends TestBase {
 		assertEquals("Unexpected nesting level in line 14 in Actual6.java", exception.getMessage());
 	}
 	
+	/**
+	 * Test a duplicate nesting definition in a 3 level nesting block
+	 * @throws Exception
+	 */
+	@Test
+	void testDuplicateInNesting() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual7.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Duplicate version definition 1.18.2 found in line 14 in Actual7.java", exception.getMessage());
+	}
 	
+	/**
+	 * Test a duplicate nesting definition in a 3 level nesting block
+	 * @throws Exception
+	 */
+	@Test
+	void testDuplicateDefInNesting() throws Exception {
+		String folder = "TestNesting/errors";
+		String actualName = "Actual8.java";
+		String expectedName = null;
+		String targetVersion = "1.14.4";
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		Exception exception = assertThrows(Exception.class, () -> {
+			processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		});
+		
+		assertEquals("Duplicate version definition def found in line 16 in Actual8.java", exception.getMessage());
+	}
 }
