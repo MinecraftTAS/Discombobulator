@@ -80,7 +80,7 @@ public class Discombobulator implements Plugin<Project> {
 				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
 				+ "                                                                   \n"
 				+ "\n"
-				+ getCenterText("Nesting statements are now a thing!")+"\n"
+				+ getCenterText("Has been rewritten 3 times!")+"\n"
 				+ "		Created by Pancake and Scribble\n"
 				+ getCenterText(discoVersion)+"\n\n";
 
