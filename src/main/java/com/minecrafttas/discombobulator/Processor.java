@@ -242,8 +242,8 @@ public class Processor {
 	==========================================================
 	
 	*
-	* In this section is everything about version block preprocessing.
-	* I use a LOT of recursion stuff to get this working.
+	* This section contains everything about version block preprocessing.
+	* 
 	*/
 
 	/**
