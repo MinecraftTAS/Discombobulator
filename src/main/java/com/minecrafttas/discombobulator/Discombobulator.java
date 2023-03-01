@@ -59,7 +59,7 @@ public class Discombobulator implements Plugin<Project> {
 			final Configuration classpath = _project.getBuildscript().getConfigurations().getByName("classpath");
 			final String version = classpath.getResolvedConfiguration().getResolvedArtifacts().stream()
 				.map(artifact -> artifact.getModuleVersion().getId())
-				.filter(id -> "com.minecrafttas".equals(id.getGroup()) && "Discombobulator".equals(id.getName()))
+				.filter(id -> "com.minecrafttas".equalsIgnoreCase(id.getGroup()) && "discombobulator".equalsIgnoreCase(id.getName()))
 				.findAny()
 				.map(ModuleVersionIdentifier::getVersion)
 				.orElseThrow(() -> new IllegalStateException("Discombobulator plugin has been deployed with wrong coordinates: expected group to be 'com.minecrafttas' and name to be 'Discombobulator'"));
