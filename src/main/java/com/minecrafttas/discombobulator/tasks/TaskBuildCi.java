@@ -28,7 +28,7 @@ public class TaskBuildCi extends DefaultTask {
 		collectDir.mkdirs();
 		for (Entry<String, File> entry : buildDirs.entrySet()) {
 			File buildDir = entry.getValue();
-			String suffix = "-mc" + entry.getKey() + ".";
+			String suffix = "-" + entry.getKey() + ".";
 			for (File artifact : buildDir.listFiles()) {
 				if (new File(collectDir, artifact.getName()).exists()) {
 					String[] fragments = artifact.getName().split("\\.", 2);
