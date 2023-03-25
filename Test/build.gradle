@@ -1,13 +1,10 @@
 plugins {
-	id 'discombobulator' version '1.1.0'
+	id 'discombobulator' version '1.2.0'
 }
 
 discombobulator {
 	versions = [
-		"1.15.2: Fabric1.15.2",
-		"1.14.4",
-		"1.12.2"
+		"1.14.4: Test1.14.4",
+		"1.12.2: Test1.12.2"
 	]
-	
-	inverted = false
 }

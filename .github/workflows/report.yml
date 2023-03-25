@@ -1,4 +1,5 @@
 name: report
+run-name: Upload Test Report
 on:
   workflow_run:
     workflows: [test]

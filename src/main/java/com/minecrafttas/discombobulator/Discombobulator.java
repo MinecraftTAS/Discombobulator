@@ -7,10 +7,12 @@ import java.util.regex.Pattern;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 
 import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
+import com.minecrafttas.discombobulator.tasks.TaskBuildCi;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.utils.Pair;
@@ -49,6 +51,15 @@ public class Discombobulator implements Plugin<Project> {
 		TaskPreprocessWatch watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get();
 		watchTask.setGroup("dicombobulator");
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
+		
+		TaskBuildCi buildCiTask = project.getTasks().register("buildCi", TaskBuildCi.class).get();
+		buildCiTask.setGroup("discombobulator");
+		buildCiTask.setDescription("Builds and collects all versions");
+		List<Task> compileTasks = new ArrayList<>();
+		for (Project subProject : project.getSubprojects()) {
+			compileTasks.add(subProject.getTasksByName("remapJar", false).iterator().next());
+		}
+		buildCiTask.updateCompileTasks(compileTasks);;
 		
 		project.afterEvaluate(_project -> {
 			boolean inverted = config.getInverted().getOrElse(false);
