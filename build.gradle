@@ -37,3 +37,16 @@ test {
 		events "passed", "skipped", "failed"
 	}
 }
+
+publishing {
+	repositories {
+		maven {
+			name = "mgnetwork"
+			url = "https://maven.mgnet.work/main"
+			credentials(PasswordCredentials)
+			authentication {
+				basic(BasicAuthentication)
+			}
+		}
+	}
+}
