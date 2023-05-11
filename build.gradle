@@ -8,7 +8,7 @@ plugins {
 sourceCompatibility = targetCompatibility = 17
 
 // Name, version and group for the project
-version = "1.2.0"
+version = "1.2.1-SNAPSHOT"
 group = "com.minecrafttas"
 archivesBaseName = "discombobulator"
 

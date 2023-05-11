@@ -45,11 +45,11 @@ public class Discombobulator implements Plugin<Project> {
 		
 		// Register tasks
 		TaskPreprocessBase baseTask = project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get();
-		baseTask.setGroup("dicombobulator");
+		baseTask.setGroup("discombobulator");
 		baseTask.setDescription("Split base source into seperate version folders");
 		
 		TaskPreprocessWatch watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get();
-		watchTask.setGroup("dicombobulator");
+		watchTask.setGroup("discombobulator");
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
 		
 		TaskBuildCi buildCiTask = project.getTasks().register("buildCi", TaskBuildCi.class).get();
@@ -91,7 +91,7 @@ public class Discombobulator implements Plugin<Project> {
 				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
 				+ "                                                                   \n"
 				+ "\n"
-				+ getCenterText("Has been rewritten 3 times!")+"\n"
+				+ getCenterText("You should try our sister preprocessor, Dicombobulator!")+"\n"
 				+ "		Created by Pancake and Scribble\n"
 				+ getCenterText(discoVersion)+"\n\n";
 
