@@ -77,14 +77,14 @@ class ProcessorTestAW extends TestBase{
 	
 	/**
 	 * TargetVersion: Null
-	 * Expected: None
+	 * Expected: Default
 	 * @throws Exception
 	 */
 	@Test
 	void testTargetVersionBeingNull() throws Exception {
 		String folder = "TestAccesswidener";
 		String actualName = "test.accesswidener";
-		String expectedName = "ExpectedNone.txt";
+		String expectedName = "Expected1.14.4.txt";
 		String targetVersion = null;
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);

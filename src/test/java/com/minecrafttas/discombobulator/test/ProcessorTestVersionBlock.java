@@ -172,7 +172,7 @@ class ProcessorTestVersionBlock extends TestBase{
 	void testNoTargetVersion() throws Exception {
 		String folder = "TestVersion";
 		String actualName = "Actual.java";
-		String expectedName = "ExpectedNone.txt";
+		String expectedName = "Expected1.14.1.txt";
 		String targetVersion = null;
 		
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
