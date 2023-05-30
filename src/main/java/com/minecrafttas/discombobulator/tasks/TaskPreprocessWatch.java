@@ -96,7 +96,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 	}
 
 	/**
-	 * Watches and preproceses a source folder
+	 * Watches and preprocesses a source folder
 	 * 
 	 * @param file     Source folder
 	 * @param versions Map of versions

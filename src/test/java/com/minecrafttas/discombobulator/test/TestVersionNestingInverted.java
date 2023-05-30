@@ -112,6 +112,28 @@ class TestVersionNestingInverted extends TestBase {
 		assertEquals(expected, actual);
 	}
 	
+	/**
+	 * TargetVersion: Null
+	 * Expected: 1.12.2
+	 * @throws Exception
+	 */
+	@Test
+	void testNoTargetVersionInverted() throws Exception {
+		String folder = "TestNesting/triplenestinginverted";
+		String actualName = "Actual.java";
+		String expectedName = "Expected1.12.2.txt";
+		String targetVersion = null;
+		
+		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
+		
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, FileNameUtils.getExtension(actualName));
+		
+		String actual = String.join("\n", linesActual);
+		String expected = String.join("\n", lines.right());
+		
+		assertEquals(expected, actual);
+	}
+	
 	// =================================== Errors
 	
 	/**

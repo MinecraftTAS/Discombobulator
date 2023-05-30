@@ -201,6 +201,11 @@ public class Processor {
 		this.filename = filename;
 		this.linenumber = 0;
 		
+		if(targetVersion == null) {	// Enable the default version if targetversion is null. This is currently used when updating the base folder
+			int defaultIndex = getIndex("def");
+			targetVersion = versions.get(defaultIndex);
+		}
+		
 		boolean useHashtags = shouldUseHashTag(fileending);
 		ConcurrentLinkedQueue<Boolean> enabledQueue = new ConcurrentLinkedQueue<>();
 		
