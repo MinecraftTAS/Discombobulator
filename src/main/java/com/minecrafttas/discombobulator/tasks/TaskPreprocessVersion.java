@@ -7,5 +7,6 @@ public class TaskPreprocessVersion extends DefaultTask {
 
 	@TaskAction
 	public void preprocessVersion() {
+		System.out.println("Test");
 	}
 }
