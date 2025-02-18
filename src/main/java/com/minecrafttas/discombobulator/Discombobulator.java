@@ -32,7 +32,7 @@ import com.minecrafttas.discombobulator.processor.LinePreprocessor;
 import com.minecrafttas.discombobulator.tasks.TaskCollectBuilds;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
-import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch2;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.PathLock;
 
@@ -68,7 +68,7 @@ public class Discombobulator implements Plugin<Project> {
 		baseTask.setGroup("discombobulator");
 		baseTask.setDescription("Split base source into seperate version folders");
 
-		TaskPreprocessWatch2 watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch2.class).get();
+		TaskPreprocessWatch watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get();
 		watchTask.setGroup("discombobulator");
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
 
