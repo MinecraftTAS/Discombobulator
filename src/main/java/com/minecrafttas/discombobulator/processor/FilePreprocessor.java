@@ -1,5 +1,6 @@
 package com.minecrafttas.discombobulator.processor;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -142,12 +143,26 @@ public class FilePreprocessor {
 	 * @param version The version to check, used in logging
 	 */
 	public static void deleteExcessFiles(Path baseSourceDir, Path otherSourceDir, String version) {
-		BetterFileWalker.walk(otherSourceDir, relativePath -> {
+		BetterFileWalker.walk(otherSourceDir, relativePathToDelete -> {
 			// Verify if file exists in base source dir
-			Path baseFile = baseSourceDir.resolve(relativePath);
+			Path baseFile = baseSourceDir.resolve(relativePathToDelete);
 			if (!Files.exists(baseFile)) {
-				System.out.println(String.format("Deleting %s in version %s", relativePath.getFileName().toString(), version));
-				SafeFileOperations.delete(baseFile);
+				System.out.println(String.format("Deleting %s in version %s", relativePathToDelete, version));
+				Path absolutePathToDelete = otherSourceDir.resolve(relativePathToDelete);
+				SafeFileOperations.delete(absolutePathToDelete);
+
+				// Delete parentDirectory if it's empty
+				Path parentDir = absolutePathToDelete.getParent();
+				boolean isEmpty;
+				try {
+					isEmpty = Files.isDirectory(parentDir) && Files.list(parentDir).count() == 0L;
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
+				if (isEmpty) {
+					SafeFileOperations.delete(parentDir);
+				}
 			}
 		});
 	}

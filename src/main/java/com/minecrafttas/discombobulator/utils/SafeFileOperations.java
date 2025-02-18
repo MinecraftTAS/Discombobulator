@@ -19,7 +19,7 @@ public class SafeFileOperations {
 	 * @param file The file to remove
 	 */
 	public static void delete(Path file) {
-		if (Files.isDirectory(file) || !Files.exists(file))
+		if (!Files.exists(file))
 			return;
 		if (Desktop.isDesktopSupported())
 			Desktop.getDesktop().moveToTrash(file.toFile());
