@@ -1,5 +1,16 @@
 package com.minecrafttas.discombobulator;
 
+import static com.minecrafttas.discombobulator.utils.Colors.BLUE;
+import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.RED;
+import static com.minecrafttas.discombobulator.utils.Colors.RED_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,6 +33,7 @@ import com.minecrafttas.discombobulator.tasks.TaskCollectBuilds;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch2;
+import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.PathLock;
 
 /**
@@ -118,7 +130,7 @@ public class Discombobulator implements Plugin<Project> {
 				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
 				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
 				+ "                                                                   \n" + "\n"
-				+ getCenterText("Less jank!") + "\n"
+				+ getCenterText(String.format("%sC%so%sl%so%sr%sf%su%sl%s!%s", RED, RED_BRIGHT, YELLOW, GREEN_BRIGHT, GREEN, CYAN, BLUE, PURPLE, PURPLE_BRIGHT, WHITE), 9) + "\n"
 				+ "		Created by Pancake and Scribble\n" + getCenterText(discoVersion) + "\n\n";
 
 	}
@@ -146,6 +158,10 @@ public class Discombobulator implements Plugin<Project> {
 
 	private static String getCenterText(String text) {
 		int length = text.length();
+		return getCenterText(text, length);
+	}
+
+	private static String getCenterText(String text, int length) {
 		int total = 31;
 		if (length % 2 == 0) {
 			total = 32;
@@ -154,7 +170,7 @@ public class Discombobulator implements Plugin<Project> {
 	}
 
 	public static void printError(String line) {
-		System.err.println("\033[0;31m" + line + "\033[0m");
+		System.err.println(Colors.RED + line + Colors.WHITE);
 	}
 
 	public static void printError(String line, String filename) {

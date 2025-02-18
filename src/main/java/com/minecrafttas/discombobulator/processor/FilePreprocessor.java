@@ -1,5 +1,12 @@
 package com.minecrafttas.discombobulator.processor;
 
+import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.RED;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +59,7 @@ public class FilePreprocessor {
 		}
 
 		if (fileFilter != null && fileFilter.accept(inFile.toFile())) {
-			System.out.println(String.format("Ignoring %s", inFile.getFileName().toString()));
+			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
 			Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING);
 			return;
 		}
@@ -62,19 +69,18 @@ public class FilePreprocessor {
 		preprocessLines(linesToProcess, outFile, version, extension);
 	}
 
-	public Triple<List<String>, Path, Path> /*<- TODO Change to it's own class*/ preprocessVersions(Path inFile, Map<String, Path> versions, String extension, Path currentDir) throws Exception {
-
-		System.out.println(String.format("Preprocessing \033[0;35m%s\033[0;37m\n", inFile.getFileName().toString()));
-
-		boolean ignored = fileFilter != null && fileFilter.accept(inFile.toFile());
+	public Triple<List<String>, Path, Path> /*<- TODO Change to it's own class*/ preprocessVersions(Path inFile, Map<String, Path> versions, String extension, Path currentDir, boolean verbose) throws Exception {
 
 		Path relativeInFile = currentDir.relativize(inFile);
+		System.out.println(String.format("Preprocessing %s%s%s%s%s", relativeInFile.getParent(), File.separator, PURPLE, relativeInFile.getFileName().toString(), WHITE));
+
+		boolean ignored = fileFilter != null && fileFilter.accept(inFile.toFile());
 
 		List<String> linesToProcess = null;
 		if (!ignored)
 			linesToProcess = Files.readAllLines(inFile);
 		else
-			System.out.println(String.format("Ignoring %s", inFile.getFileName().toString()));
+			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
 
 		Triple<List<String>, Path, Path> out = null;
 
@@ -86,7 +92,9 @@ public class FilePreprocessor {
 			Path outFile = targetSubSourceDir.resolve(relativeInFile);
 
 			if (ignored) {
-				System.out.println(String.format("into version \033[0;36m%s\033[0;37m", versionName));
+				if (verbose) {
+					System.out.println(String.format("into version %s%s%s", CYAN, versionName, WHITE));
+				}
 				Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING);
 				continue;
 			}
@@ -101,9 +109,10 @@ public class FilePreprocessor {
 			}
 
 			preprocessLines(outLines, outFile, versionName, extension);
-			System.out.println(String.format("into version \033[0;36m%s\033[0;37m", versionName));
+			if (verbose) {
+				System.out.println(String.format("into version %s%s%s", CYAN, versionName, WHITE));
+			}
 		}
-
 		return out;
 	}
 
@@ -147,7 +156,7 @@ public class FilePreprocessor {
 			// Verify if file exists in base source dir
 			Path baseFile = baseSourceDir.resolve(relativePathToDelete);
 			if (!Files.exists(baseFile)) {
-				System.out.println(String.format("Deleting %s in version %s", relativePathToDelete, version));
+				System.out.println(String.format("Deleting %s%s%s%s%s in version %s%s%s", relativePathToDelete.getParent(), File.separator, RED, relativePathToDelete.getFileName().toString(), WHITE, CYAN, version, WHITE));
 				Path absolutePathToDelete = otherSourceDir.resolve(relativePathToDelete);
 				SafeFileOperations.delete(absolutePathToDelete);
 

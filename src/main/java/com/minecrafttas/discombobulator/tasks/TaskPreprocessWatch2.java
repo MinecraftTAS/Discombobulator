@@ -1,5 +1,10 @@
 package com.minecrafttas.discombobulator.tasks;
 
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
+
 import java.io.IOException;
 import java.nio.charset.MalformedInputException;
 import java.nio.file.ClosedWatchServiceException;
@@ -17,6 +22,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
+import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.FileWatcher;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.PathLock;
@@ -75,7 +81,7 @@ public class TaskPreprocessWatch2 extends DefaultTask {
 		// Wait for user input and cancel the task
 
 		Scanner sc = new Scanner(System.in);
-		System.out.println("Press ENTER to stop the file watcher");
+		System.out.println(String.format("Press %sENTER%s to stop the file watcher", GREEN, WHITE));
 		String in;
 		try {
 			while (!(in = sc.nextLine()).isBlank()) {
@@ -92,7 +98,7 @@ public class TaskPreprocessWatch2 extends DefaultTask {
 					SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 					currentFileUpdater = null;
 
-					System.out.println(String.format("Preprocessed the recently edited file \033[0;35m%s\033[0;37m\n", outFile.getFileName()));
+					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, outFile.getFileName(), WHITE));
 				}
 			}
 		} catch (IOException e1) {
@@ -141,14 +147,14 @@ public class TaskPreprocessWatch2 extends DefaultTask {
 				try {
 
 					// Preprocess in all sub versions
-					currentFileUpdater = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir);
+					currentFileUpdater = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 
 					// Preprocess in base dir
 					Path outFile = baseSourceDir.resolve(relativeInFile);
 					Discombobulator.fileProcessor.preprocessFile(path, outFile, null, extension);
 
 					if (msgSeen == false) {
-						System.out.println("Type 1 to also preprocess this file\n");
+						System.out.println(Colors.YELLOW + "Type 1 to also preprocess this file" + Colors.WHITE + "\n");
 						msgSeen = true;
 					}
 				} catch (MalformedInputException e) {
@@ -194,7 +200,7 @@ public class TaskPreprocessWatch2 extends DefaultTask {
 
 		public FileWatcherThread(FileWatcher watcher, String version) {
 			super("FileWatcher-" + version);
-			System.out.println(String.format("Started watching \033[0;32m%s\033[0;37m", version));
+			System.out.println(String.format("Started watching %s%s%s", GREEN, version, WHITE));
 			this.watcher = watcher;
 			this.setDaemon(true);
 			this.start();
@@ -207,12 +213,12 @@ public class TaskPreprocessWatch2 extends DefaultTask {
 			} catch (IOException e) {
 //				e.printStackTrace();
 			} catch (InterruptedException e) {
-				System.out.println("Interrupting " + this.getName());
+				System.out.println("Interrupting " + YELLOW + this.getName().replace("FileWatcher-", "") + WHITE);
 				if (watcher != null)
 					watcher.close();
 				e.printStackTrace();
 			} catch (ClosedWatchServiceException e) {
-				System.out.println("Shutting down " + this.getName());
+				System.out.println("Shutting down " + GREEN + this.getName().replace("FileWatcher-", "") + WHITE);
 			}
 		}
 

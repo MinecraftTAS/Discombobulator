@@ -25,11 +25,12 @@ public class TaskPreprocessBase extends DefaultTask {
 
 	@TaskAction
 	public void preprocessBase() {
+
+		System.out.println(Discombobulator.getSplash());
+
 		// Lock port
 		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
-
-		System.out.println(Discombobulator.getSplash());
 
 		// Prepare list of physical version folders
 		Path baseProjectDir = this.getProject().getProjectDir().toPath();
@@ -54,12 +55,11 @@ public class TaskPreprocessBase extends DefaultTask {
 			throw new RuntimeException("Base source folder not found");
 
 		BetterFileWalker.walk(baseSourceDir, path -> {
-			System.out.println("Preprocessing " + path);
 			Path inFile = baseSourceDir.resolve(path);
 			String extension = FilenameUtils.getExtension(path.getFileName().toString());
 
 			try {
-				Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, baseSourceDir);
+				Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, baseSourceDir, false);
 			} catch (MalformedInputException e) {
 				Discombobulator.printError(String.format("Can't process file, probably not a text file...\n Maybe add ignoredFileFormats = [\"*.%s\"] to the build.gradle?", extension), path.getFileName().toString());
 				e.printStackTrace();
