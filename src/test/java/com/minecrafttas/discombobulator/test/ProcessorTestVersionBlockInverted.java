@@ -8,14 +8,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.minecrafttas.discombobulator.Processor;
+import com.minecrafttas.discombobulator.processor.LinePreprocessor;
 import com.minecrafttas.discombobulator.utils.Pair;
 
 class ProcessorTestVersionBlockInverted extends TestBase {
 
 	private List<String> allVersions = Arrays.asList("1.12.2", "1.12", "1.11.2", "1.8.9", "1.7.10");
 
-	private Processor processor = new Processor(allVersions, null, true);
+	private LinePreprocessor processor = new LinePreprocessor(allVersions, null, true);
 
 	/**
 	 * TargetVersion: 1.8.9
@@ -31,7 +31,7 @@ class ProcessorTestVersionBlockInverted extends TestBase {
 
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), getExtension(actualName));
 
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -53,7 +53,7 @@ class ProcessorTestVersionBlockInverted extends TestBase {
 
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), getExtension(actualName));
 
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -75,7 +75,7 @@ class ProcessorTestVersionBlockInverted extends TestBase {
 
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), getExtension(actualName));
 
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -97,7 +97,7 @@ class ProcessorTestVersionBlockInverted extends TestBase {
 
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 
-		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), actualName, getExtension(actualName));
+		List<String> linesActual = processor.preprocess(targetVersion, lines.left(), getExtension(actualName));
 
 		String actual = String.join("\n", linesActual);
 		String expected = String.join("\n", lines.right());
@@ -120,9 +120,9 @@ class ProcessorTestVersionBlockInverted extends TestBase {
 		Pair<List<String>, List<String>> lines = getLines(folder, actualName, expectedName);
 
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			processor.preprocess(targetVersion, lines.left(), actualName, getExtension(actualName));
+			processor.preprocess(targetVersion, lines.left(), getExtension(actualName));
 		});
 
-		assertEquals("The target version 1.1 was not found", exception.getMessage());
+		assertEquals("The target version 1.1 was not found in line 4", exception.getMessage());
 	}
 }

@@ -1,11 +1,15 @@
 package com.minecrafttas.discombobulator.tasks;
 
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
+
 import java.io.IOException;
 import java.nio.charset.MalformedInputException;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,13 +18,14 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
-import com.minecrafttas.discombobulator.PathLock;
+import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.FileWatcher;
+import com.minecrafttas.discombobulator.utils.LineFeedHelper;
+import com.minecrafttas.discombobulator.utils.PathLock;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 import com.minecrafttas.discombobulator.utils.SocketLock;
 import com.minecrafttas.discombobulator.utils.Triple;
@@ -28,7 +33,7 @@ import com.minecrafttas.discombobulator.utils.Triple;
 /**
  * This task preprocesses the source code on file change
  * 
- * @author Pancake
+ * @author Pancake, Scribble
  */
 public class TaskPreprocessWatch extends DefaultTask {
 
@@ -43,8 +48,6 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	private boolean msgSeen = false;
 
-	private WildcardFileFilter fileFilter;
-
 	@TaskAction
 	public void preprocessWatch() {
 		System.out.println(Discombobulator.getSplash());
@@ -56,10 +59,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 		Path baseProjectDir = this.getProject().getProjectDir().toPath();
 		baseSourceDir = baseProjectDir.resolve("src");
 
-		List<String> ignored = Discombobulator.ignored;
-		fileFilter = WildcardFileFilter.builder().setWildcards(ignored).get();
-		if (!ignored.isEmpty())
-			System.out.println(String.format("Ignoring %s\n\n", ignored));
+		LineFeedHelper.printMessage();
 
 		Map<String, Path> versionsConfig;
 		try {
@@ -81,7 +81,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 		// Wait for user input and cancel the task
 
 		Scanner sc = new Scanner(System.in);
-		System.out.println("Press ENTER to stop the file watcher");
+		System.out.println(String.format("Press %sENTER%s to stop the file watcher", GREEN, WHITE));
 		String in;
 		try {
 			while (!(in = sc.nextLine()).isBlank()) {
@@ -91,16 +91,14 @@ public class TaskPreprocessWatch extends DefaultTask {
 						continue;
 					}
 					Path outFile = currentFileUpdater.right();
-					Path inFile = currentFileUpdater.middle();
 					List<String> outLines = currentFileUpdater.left();
 
 					Discombobulator.pathLock.scheduleAndLock(outFile);
 					Files.createDirectories(outFile.getParent());
 					SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-					Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(inFile));
 					currentFileUpdater = null;
 
-					System.out.println(String.format("Processed the recently edited file %s\n", outFile.getFileName()));
+					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, outFile.getFileName(), WHITE));
 				}
 			}
 		} catch (IOException e1) {
@@ -138,89 +136,32 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 			@Override
 			protected void onModifyFile(Path path) {
-				// Get the filename that is getting preprocessed
-				String filename = path.getFileName().toString();
 
 				PathLock schedule = Discombobulator.pathLock;
 				if (schedule.isLocked(path))
 					return;
 
 				// Get path relative to the root dir
-				Path inFile = subSourceDir.relativize(path);
-
-				boolean ignore = false;
-				if (fileFilter.accept(inFile.toFile())) {
-					System.out.println(String.format("Ignoring %s", inFile.getFileName().toString()));
-					ignore = true;
-				}
-
+				Path relativeInFile = subSourceDir.relativize(path);
+				String extension = FilenameUtils.getExtension(path.getFileName().toString());
 				try {
-					// Modify this file in other versions too
 
-					// Read the original file
-					String extension = FilenameUtils.getExtension(path.getFileName().toString());
-					List<String> linesToProcess = new ArrayList<>();
-					try {
-						if (!ignore)
-							linesToProcess = Files.readAllLines(path);
-					} catch (MalformedInputException e) {
-						Discombobulator.printError(String.format("Can't process the specified file, probably not a text file: %s\n Maybe add ignoredFileFormats = [\"*.%s\"] to the build.gradle?", path.getFileName(), extension));
-						return;
-					}
+					// Preprocess in all sub versions
+					currentFileUpdater = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 
-					// Iterate through all versions
-					for (Entry<String, Path> versionPair : versions.entrySet()) {
-						String versionName = versionPair.getKey();
-						Path targetProject = versionPair.getValue();
-						Path targetSubSourceDir = targetProject.resolve("src");
-
-						// Write file
-						Path outFile = targetSubSourceDir.resolve(inFile);
-
-						if (ignore) {
-							Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-							continue;
-						}
-
-						// Preprocess the lines
-						List<String> outLines = Discombobulator.processor.preprocess(versionName, linesToProcess, filename, extension);
-
-						// If the version equals the original version, then skip it
-						if (targetSubSourceDir.equals(subSourceDir)) {
-							currentFileUpdater = Triple.of(outLines, path, outFile);
-							continue;
-						}
-
-						schedule.scheduleAndLock(outFile);
-						Files.createDirectories(outFile.getParent());
-						SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-						Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
-					}
-
-					// Modify this file in base project
-
-					Path outFile = baseSourceDir.resolve(inFile);
-
-					if (ignore) {
-						Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-						return;
-					}
-
-					List<String> lines = Discombobulator.processor.preprocess(null, linesToProcess, filename, extension);
-
-					Files.createDirectories(outFile.getParent());
-					SafeFileOperations.write(outFile, lines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-					Files.setLastModifiedTime(outFile, Files.getLastModifiedTime(path));
-					System.out.println(String.format("Processed %s in %s", path.getFileName(), version));
+					// Preprocess in base dir
+					Path outFile = baseSourceDir.resolve(relativeInFile);
+					Discombobulator.fileProcessor.preprocessFile(path, outFile, null, extension);
 
 					if (msgSeen == false) {
-						System.out.println("Type 1 to also preprocess this file\n");
+						System.out.println(Colors.YELLOW + "Type 1 to also preprocess this file" + Colors.WHITE + "\n");
 						msgSeen = true;
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (MalformedInputException e) {
+					Discombobulator.printError(String.format("Can't process file, probably not a text file...\n Maybe add ignoredFileFormats = [\"*.%s\"] to the build.gradle?", extension), path.getFileName().toString());
+					return;
 				} catch (Exception e) {
-					Discombobulator.printError(e.getMessage());
+					Discombobulator.printError(e.getMessage(), path.getFileName().toString());
 					return;
 				}
 			}
@@ -259,7 +200,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 		public FileWatcherThread(FileWatcher watcher, String version) {
 			super("FileWatcher-" + version);
-			System.out.println("Started watching " + version);
+			System.out.println(String.format("Started watching %s%s%s", GREEN, version, WHITE));
 			this.watcher = watcher;
 			this.setDaemon(true);
 			this.start();
@@ -272,12 +213,12 @@ public class TaskPreprocessWatch extends DefaultTask {
 			} catch (IOException e) {
 //				e.printStackTrace();
 			} catch (InterruptedException e) {
-				System.out.println("Interrupting " + this.getName());
+				System.out.println("Interrupting " + YELLOW + this.getName().replace("FileWatcher-", "") + WHITE);
 				if (watcher != null)
 					watcher.close();
 				e.printStackTrace();
 			} catch (ClosedWatchServiceException e) {
-				System.out.println("Shutting down " + this.getName());
+				System.out.println("Shutting down " + GREEN + this.getName().replace("FileWatcher-", "") + WHITE);
 			}
 		}
 

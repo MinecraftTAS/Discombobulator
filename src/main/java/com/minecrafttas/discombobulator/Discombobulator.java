@@ -1,5 +1,16 @@
 package com.minecrafttas.discombobulator;
 
+import static com.minecrafttas.discombobulator.utils.Colors.BLUE;
+import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.RED;
+import static com.minecrafttas.discombobulator.utils.Colors.RED_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -8,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -15,9 +27,14 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 
 import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
+import com.minecrafttas.discombobulator.processor.FilePreprocessor;
+import com.minecrafttas.discombobulator.processor.LinePreprocessor;
 import com.minecrafttas.discombobulator.tasks.TaskCollectBuilds;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
+import com.minecrafttas.discombobulator.utils.Colors;
+import com.minecrafttas.discombobulator.utils.PathLock;
 
 /**
  * Gradle plugin main class
@@ -30,13 +47,11 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static PreprocessingConfiguration config;
 
-	public static Processor processor;
+	public static FilePreprocessor fileProcessor;
 
 	public static PathLock pathLock;
 
 	private static String discoVersion;
-
-	public static List<String> ignored;
 
 	/**
 	 * Apply the gradle plugin to the project
@@ -64,6 +79,10 @@ public class Discombobulator implements Plugin<Project> {
 		List<Task> compileTasks = new ArrayList<>();
 		for (Project subProject : project.getSubprojects()) {
 			compileTasks.add(subProject.getTasksByName("remapJar", false).iterator().next());
+
+			TaskPreprocessVersion versionTask = subProject.getTasks().register("preprocessVersion", TaskPreprocessVersion.class).get();
+			versionTask.setGroup("discombobulator");
+			versionTask.setDescription("Preprocesses this version back to the base folder and to versions other than this one");
 		}
 		collectBuilds.updateCompileTasks(compileTasks);
 
@@ -84,7 +103,12 @@ public class Discombobulator implements Plugin<Project> {
 				return;
 			}
 			List<String> versionStrings = new ArrayList<>(versionPairs.keySet());
-			processor = new Processor(versionStrings, config.getPatterns().get(), inverted);
+			LinePreprocessor processor = new LinePreprocessor(versionStrings, config.getPatterns().get(), inverted);
+
+			List<String> ignored = config.getIgnoredFileFormats().getOrElse(new ArrayList<>());
+			WildcardFileFilter fileFilter = WildcardFileFilter.builder().setWildcards(ignored).get();
+
+			fileProcessor = new FilePreprocessor(processor, fileFilter);
 
 			// Yes this is yoinked from the gradle forums to get the disco version. Is there
 			// a better method? Probably. Do I care? Currently, no.
@@ -92,8 +116,6 @@ public class Discombobulator implements Plugin<Project> {
 			final String version = classpath.getResolvedConfiguration().getResolvedArtifacts().stream().map(artifact -> artifact.getModuleVersion().getId()).filter(id -> "com.minecrafttas".equalsIgnoreCase(id.getGroup())
 					&& "discombobulator".equalsIgnoreCase(id.getName())).findAny().map(ModuleVersionIdentifier::getVersion).orElseThrow(() -> new IllegalStateException("Discombobulator plugin has been deployed with wrong coordinates: expected group to be 'com.minecrafttas' and name to be 'Discombobulator'"));
 			discoVersion = version;
-
-			ignored = config.getIgnoredFileFormats().getOrElse(new ArrayList<>());
 		});
 
 	}
@@ -108,7 +130,7 @@ public class Discombobulator implements Plugin<Project> {
 				+ " | |) | (_-< _/ _ \\ '  \\()| '_ \\/ _ \\ '_ \\ || | / _` |  _/ _ \\ '_| \n"
 				+ " |___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|   \n"
 				+ "                                                                   \n" + "\n"
-				+ getCenterText("Less jank!") + "\n"
+				+ getCenterText(String.format("%sC%so%sl%so%sr%sf%su%sl%s!%s", RED, RED_BRIGHT, YELLOW, GREEN_BRIGHT, GREEN, CYAN, BLUE, PURPLE, PURPLE_BRIGHT, WHITE), 9) + "\n"
 				+ "		Created by Pancake and Scribble\n" + getCenterText(discoVersion) + "\n\n";
 
 	}
@@ -136,6 +158,10 @@ public class Discombobulator implements Plugin<Project> {
 
 	private static String getCenterText(String text) {
 		int length = text.length();
+		return getCenterText(text, length);
+	}
+
+	private static String getCenterText(String text, int length) {
 		int total = 31;
 		if (length % 2 == 0) {
 			total = 32;
@@ -144,6 +170,10 @@ public class Discombobulator implements Plugin<Project> {
 	}
 
 	public static void printError(String line) {
-		System.err.println("\033[0;31m" + line + "\033[0m");
+		System.err.println(Colors.RED + line + Colors.WHITE);
+	}
+
+	public static void printError(String line, String filename) {
+		printError(String.format("[%s] %s", filename, line));
 	}
 }
