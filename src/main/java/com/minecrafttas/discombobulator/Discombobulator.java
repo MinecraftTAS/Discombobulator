@@ -48,6 +48,8 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static PreprocessingConfiguration config;
 
+	public static boolean DISABLE_ANSI = false;
+
 	public static FilePreprocessor fileProcessor;
 
 	public static PathLock pathLock;
@@ -95,6 +97,7 @@ public class Discombobulator implements Plugin<Project> {
 		project.afterEvaluate(_project -> {
 			boolean inverted = config.getInverted().getOrElse(false);
 			PORT_LOCK = config.getPort().getOrElse(8762);
+			DISABLE_ANSI = config.getDisableAnsi().getOrElse(false);
 
 			Map<String, Path> versionPairs = null;
 			Path projectDir = _project.getProjectDir().toPath();

@@ -1,5 +1,7 @@
 package com.minecrafttas.discombobulator.utils;
 
+import com.minecrafttas.discombobulator.Discombobulator;
+
 public enum Colors {
 	RESET("\033[0m"),
 
@@ -76,7 +78,7 @@ public enum Colors {
 
 	@Override
 	public String toString() {
-		return ansiCode;
+		return Discombobulator.DISABLE_ANSI ? "" : ansiCode;
 	}
 
 	Colors(String ansiCode) {

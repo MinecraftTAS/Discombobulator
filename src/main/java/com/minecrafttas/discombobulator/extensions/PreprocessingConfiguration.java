@@ -49,6 +49,12 @@ public abstract class PreprocessingConfiguration {
 	public abstract Property<Boolean> getInverted();
 
 	/**
+	 * If true, disables ANSI colors
+	 * @return
+	 */
+	public abstract Property<Boolean> getDisableAnsi();
+
+	/**
 	 * The port for the port lock
 	 * @return The port number
 	 */
