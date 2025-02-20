@@ -28,7 +28,6 @@ import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.PathLock;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 import com.minecrafttas.discombobulator.utils.SocketLock;
-import com.minecrafttas.discombobulator.utils.Triple;
 
 /**
  * This task preprocesses the source code on file change
@@ -39,7 +38,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 	private List<FileWatcherThread> threads = new ArrayList<>();
 
-	private Triple<List<String>, Path, Path> currentFileUpdater = null;
+	private CurrentFilePreprocessAction currentFileAction = null;
 	/**
 	 * <p>The source dir in the base project that is used for version control<br>
 	 * <code>rootdir/src</code>
@@ -86,17 +85,17 @@ public class TaskPreprocessWatch extends DefaultTask {
 		try {
 			while (!(in = sc.nextLine()).isBlank()) {
 				if (!in.isBlank()) {
-					if (currentFileUpdater == null) {
+					if (currentFileAction == null) {
 						System.out.println("No recent file exists...\n");
 						continue;
 					}
-					Path outFile = currentFileUpdater.right();
-					List<String> outLines = currentFileUpdater.left();
+					Path outFile = currentFileAction.outFile();
+					List<String> outLines = currentFileAction.outLines();
 
 					Discombobulator.pathLock.scheduleAndLock(outFile);
 					Files.createDirectories(outFile.getParent());
 					SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-					currentFileUpdater = null;
+					currentFileAction = null;
 
 					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, outFile.getFileName(), WHITE));
 				}
@@ -147,7 +146,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 				try {
 
 					// Preprocess in all sub versions
-					currentFileUpdater = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
+					currentFileAction = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 
 					// Preprocess in base dir
 					Path outFile = baseSourceDir.resolve(relativeInFile);
@@ -226,5 +225,19 @@ public class TaskPreprocessWatch extends DefaultTask {
 			if (watcher != null)
 				watcher.close();
 		}
+	}
+
+	/// 
+	/// Stores data used for preprocessing the file that was edited most recently.
+	///
+	/// This fixes an issue where the IDE will behave weirdly, when trying to preprocess and replace a file,  
+	/// that is currently being worked on. So when saving a file,  
+	/// The file watcher would also replace the file that you just saved, leading to discrepancies and annoyances.
+	///
+	/// With this, you can execute the preprocessing at a later time.
+	///
+	/// @author Scribble
+	///
+	public static record CurrentFilePreprocessAction(List<String> outLines, Path inFile, Path outFile) {
 	}
 }

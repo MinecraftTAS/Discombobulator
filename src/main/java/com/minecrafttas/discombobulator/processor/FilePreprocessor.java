@@ -18,10 +18,10 @@ import java.util.Map.Entry;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import com.minecrafttas.discombobulator.Discombobulator;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePreprocessAction;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
-import com.minecrafttas.discombobulator.utils.Triple;
 
 public class FilePreprocessor {
 
@@ -33,6 +33,15 @@ public class FilePreprocessor {
 		this.fileFilter = fileFilter;
 	}
 
+	/**
+	 * Preprocesses a single file into the target version
+	 * 
+	 * @param inFile The path to the file that will be preprocessed  
+	 * @param outFile The path to the file where the preprocessed file will be stored stored
+	 * @param version The target version to preprocess to            
+	 * @param extension The file extension (e.g. ".java") of the file
+	 * @throws Exception If the preprocessing fails
+	 */
 	public void preprocessFile(Path inFile, Path outFile, String version, String extension) throws Exception {
 
 //		System.out.println(inFile);
@@ -69,9 +78,21 @@ public class FilePreprocessor {
 		preprocessLines(linesToProcess, outFile, version, extension);
 	}
 
-	public Triple<List<String>, Path, Path> /*<- TODO Change to it's own class*/ preprocessVersions(Path inFile, Map<String, Path> versions, String extension, Path currentDir, boolean verbose) throws Exception {
+	/**
+	 * Preprocess a file into multiple target versions
+	 * 
+	 * @param inFile The file to preprocess
+	 * @param versions The mapped versions to preprocess to.
+	 * @param extension The file extension (e.g. ".java") of the file
+	 * @param currentVersionDir The current version directory that where the file that is being worked on lies.<br>
+	 * Used for checking if you are trying to preprocess into the current directory, which can lead to issues otherwise.
+	 * @param verbose If more info should be printed to the console
+	 * @return The {@link CurrentFilePreprocessAction}
+	 * @throws Exception If the preprocessing fails
+	 */
+	public CurrentFilePreprocessAction preprocessVersions(Path inFile, Map<String, Path> versions, String extension, Path currentVersionDir, boolean verbose) throws Exception {
 
-		Path relativeInFile = currentDir.relativize(inFile);
+		Path relativeInFile = currentVersionDir.relativize(inFile);
 		System.out.println(String.format("Preprocessing %s%s%s%s%s", relativeInFile.getParent(), File.separator, PURPLE, relativeInFile.getFileName().toString(), WHITE));
 
 		boolean ignored = fileFilter != null && fileFilter.accept(inFile.toFile());
@@ -82,7 +103,7 @@ public class FilePreprocessor {
 		else
 			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
 
-		Triple<List<String>, Path, Path> out = null;
+		CurrentFilePreprocessAction out = null;
 
 		// Iterate through all versions
 		for (Entry<String, Path> versionPair : versions.entrySet()) {
@@ -91,6 +112,7 @@ public class FilePreprocessor {
 			Path targetSubSourceDir = targetProject.resolve("src");
 			Path outFile = targetSubSourceDir.resolve(relativeInFile);
 
+			// Stop certain file types to be preprocessed (e.g. ".png")
 			if (ignored) {
 				if (verbose) {
 					System.out.println(String.format("into version %s%s%s", CYAN, versionName, WHITE));
@@ -103,8 +125,8 @@ public class FilePreprocessor {
 			List<String> outLines = processor.preprocess(versionName, linesToProcess, extension);
 
 			// If the version equals the original version, then skip it
-			if (targetSubSourceDir.equals(currentDir)) {
-				out = Triple.of(outLines, inFile, outFile);
+			if (targetSubSourceDir.equals(currentVersionDir)) {
+				out = new CurrentFilePreprocessAction(outLines, inFile, outFile);
 				continue;
 			}
 
@@ -127,7 +149,20 @@ public class FilePreprocessor {
 	 */
 	public List<String> preprocessLines(List<String> inLines, Path outFile, String version, String extension) throws Exception {
 		List<String> lines = processor.preprocess(version, inLines, extension);
+		writeLines(inLines, outFile);
+		return lines;
+	}
 
+	///
+	/// 1. Locks the file to stop the filewatcher from detecting it
+	/// 2. Creates any missing directories
+	/// 3. Writes the lines with the line feed specified by the `line.seperator` system property
+	///
+	/// @param inLines
+	/// @param outFile
+	/// @throws Exception
+	///
+	private void writeLines(List<String> inLines, Path outFile) throws Exception {
 		// Lock the file
 		Discombobulator.pathLock.scheduleAndLock(outFile);
 
@@ -136,13 +171,11 @@ public class FilePreprocessor {
 
 		StringBuilder stringBuilder = new StringBuilder();
 		String linefeed = LineFeedHelper.newLine();
-		for (String line : lines) {
+		for (String line : inLines) {
 			stringBuilder.append(line);
 			stringBuilder.append(linefeed);
 		}
 		Files.write(outFile, stringBuilder.toString().getBytes());
-
-		return lines;
 	}
 
 	/**
@@ -183,4 +216,5 @@ public class FilePreprocessor {
 	public WildcardFileFilter getFileFilter() {
 		return fileFilter;
 	}
+
 }
