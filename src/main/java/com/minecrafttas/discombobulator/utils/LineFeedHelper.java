@@ -13,7 +13,7 @@ public class LineFeedHelper {
 		} else if ("\\r\\n".equals(property) || "\r\n".equals(property)) {
 			System.out.println(String.format("Preprocessing with line seperator %s\\r\\n%s\n", YELLOW, WHITE));
 		} else {
-			System.out.println(String.format("Preprocessing with default line seperator %s%s%s\nTo change this, add %s-Dline.seperator=\"\\n\"%s to VM arguments\n", YELLOW, property.equals("\r\n") ? "\\r\\n" : "\\n", WHITE, YELLOW, WHITE));
+			System.out.println(String.format("Preprocessing with default line seperator %s%s%s\nTo change this, add %s-Dline.seperator=\"\\n\"%s to VM arguments\n", YELLOW, "\r\n".equals(property) ? "\\r\\n" : "\\n", WHITE, YELLOW, WHITE));
 		}
 	}
 
