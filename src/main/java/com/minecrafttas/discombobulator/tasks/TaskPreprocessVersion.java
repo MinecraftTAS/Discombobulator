@@ -11,6 +11,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePreprocessAction;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.Pair;
@@ -75,7 +76,8 @@ public class TaskPreprocessVersion extends DefaultTask {
 
 			try {
 				// Preprocess version dir
-				Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, versionSourceDir, true);
+				CurrentFilePreprocessAction action = Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, versionSourceDir, true);
+				TaskPreprocessWatch.runFileAction(action);
 
 				// Preprocess in base dir
 				Path outFile = baseSourceDir.resolve(path);

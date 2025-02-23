@@ -89,15 +89,10 @@ public class TaskPreprocessWatch extends DefaultTask {
 						System.out.println("No recent file exists...\n");
 						continue;
 					}
-					Path outFile = currentFileAction.outFile();
-					List<String> outLines = currentFileAction.outLines();
-
-					Discombobulator.pathLock.scheduleAndLock(outFile);
-					Files.createDirectories(outFile.getParent());
-					SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					TaskPreprocessWatch.runFileAction(currentFileAction);
 					currentFileAction = null;
 
-					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, outFile.getFileName(), WHITE));
+					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, currentFileAction.outFile().getFileName(), WHITE));
 				}
 			}
 		} catch (IOException e1) {
@@ -239,5 +234,19 @@ public class TaskPreprocessWatch extends DefaultTask {
 	/// @author Scribble
 	///
 	public static record CurrentFilePreprocessAction(List<String> outLines, Path inFile, Path outFile) {
+	}
+
+	///
+	/// Runs the {@link CurrentFilePreprocessAction}
+	///
+	/// @param currentFileAction The {@link CurrentFilePreprocessAction} to run
+	///
+	public static void runFileAction(CurrentFilePreprocessAction currentFileAction) throws IOException {
+		Path outFile = currentFileAction.outFile();
+		List<String> outLines = currentFileAction.outLines();
+
+		Discombobulator.pathLock.scheduleAndLock(outFile);
+		Files.createDirectories(outFile.getParent());
+		SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 	}
 }
