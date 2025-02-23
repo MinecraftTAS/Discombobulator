@@ -74,8 +74,9 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 		for (Entry<String, Path> versionPair : versionsConfig.entrySet()) {
 			Path subSourceDir = versionPair.getValue().resolve("src");
-			this.watch(subSourceDir, versionsConfig);
+			this.watchVersion(subSourceDir, versionsConfig);
 		}
+		//this.watchBase(versionsConfig);
 
 		// Wait for user input and cancel the task
 
@@ -104,16 +105,33 @@ public class TaskPreprocessWatch extends DefaultTask {
 	}
 
 	/**
-	 * Watches and preprocesses a source folder
+	 * Watches and preprocesses a version source folder
 	 * 
 	 * @param subSourceDir Source folder of the sub project
 	 * @param versionSet Map of versions
 	 */
-	private void watch(Path subSourceDir, Map<String, Path> versionSet) {
+	private void watchVersion(Path subSourceDir, Map<String, Path> versionSet) {
 		String version = subSourceDir.getParent().getFileName().toString();
 		FileWatcher watcher = null;
 		try {
 			watcher = constructFileWatcher(subSourceDir, versionSet, version);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		threads.add(new FileWatcherThread(watcher, version));
+	}
+
+	/**
+	 * Watches and preprocesses a version base folder
+	 * 
+	 * @param baseSourceDir Source folder of the sub project
+	 * @param versionSet Map of versions
+	 */
+	private void watchBase(Map<String, Path> versionSet) {
+		String version = baseSourceDir.getParent().getFileName().toString();
+		FileWatcher watcher = null;
+		try {
+			watcher = constructFileWatcher(baseSourceDir, versionSet, version);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
