@@ -4,8 +4,8 @@ plugins {
 	id 'maven-publish'
 }
 
-// Change java compatibility level to 22
-sourceCompatibility = targetCompatibility = 22
+// Change java compatibility level to 23
+sourceCompatibility = targetCompatibility = 23
 
 // Name, version and group for the project
 version = "1.3-SNAPSHOT"

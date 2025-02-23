@@ -1,5 +1,8 @@
 package com.minecrafttas.discombobulator.utils;
 
+import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -26,7 +29,7 @@ public class SocketLock {
 	 */
 	public SocketLock(int port) {
 		this.port = port;
-		System.out.println(String.format("Locking Port \033[0;32m%s\033[0;37m\n", port));
+		System.out.println(String.format("Locking Port %s%s%s\n", GREEN, port, WHITE));
 		try {
 			this.socket = new ServerSocket();
 		} catch (IOException e) {

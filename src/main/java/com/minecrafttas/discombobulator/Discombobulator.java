@@ -32,6 +32,7 @@ import com.minecrafttas.discombobulator.processor.LinePreprocessor;
 import com.minecrafttas.discombobulator.tasks.TaskCollectBuilds;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessBase;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
+import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersionError;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.PathLock;
@@ -46,6 +47,8 @@ public class Discombobulator implements Plugin<Project> {
 	public static int PORT_LOCK = 8762;
 
 	public static PreprocessingConfiguration config;
+
+	public static boolean DISABLE_ANSI = false;
 
 	public static FilePreprocessor fileProcessor;
 
@@ -79,16 +82,22 @@ public class Discombobulator implements Plugin<Project> {
 		List<Task> compileTasks = new ArrayList<>();
 		for (Project subProject : project.getSubprojects()) {
 			compileTasks.add(subProject.getTasksByName("remapJar", false).iterator().next());
-
+			// Register preprocessVersion task in subProjects
 			TaskPreprocessVersion versionTask = subProject.getTasks().register("preprocessVersion", TaskPreprocessVersion.class).get();
 			versionTask.setGroup("discombobulator");
 			versionTask.setDescription("Preprocesses this version back to the base folder and to versions other than this one");
 		}
 		collectBuilds.updateCompileTasks(compileTasks);
 
+		// Register preprocessVersion task in root
+		TaskPreprocessVersionError versionTaskRoot = project.getTasks().register("preprocessVersion", TaskPreprocessVersionError.class).get();
+		versionTaskRoot.setGroup("discombobulator");
+		versionTaskRoot.setDescription("Do not use this task! Use it in subprojects!");
+
 		project.afterEvaluate(_project -> {
 			boolean inverted = config.getInverted().getOrElse(false);
 			PORT_LOCK = config.getPort().getOrElse(8762);
+			DISABLE_ANSI = config.getDisableAnsi().getOrElse(false);
 
 			Map<String, Path> versionPairs = null;
 			Path projectDir = _project.getProjectDir().toPath();
