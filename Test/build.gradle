@@ -10,5 +10,5 @@ discombobulator {
 	
 	ignoredFileFormats = ["*.png"]
 	
-	disableAnsi = true
+	disableAnsi = false
 }

@@ -38,7 +38,7 @@ public class FilePreprocessor {
 	 * 
 	 * @param inFile The path to the file that will be preprocessed  
 	 * @param outFile The path to the file where the preprocessed file will be stored stored
-	 * @param version The target version to preprocess to            
+	 * @param version The target version to preprocess to. null if the target is the base source
 	 * @param extension The file extension (e.g. ".java") of the file
 	 * @throws Exception If the preprocessing fails
 	 */
@@ -66,6 +66,13 @@ public class FilePreprocessor {
 		if (Discombobulator.pathLock.isLocked(inFile)) {
 			return;
 		}
+
+		String targetVersion = version;
+		if (targetVersion == null) {
+			targetVersion = "Base";
+		}
+
+		System.out.println(String.format("into version %s%s%s", CYAN, targetVersion, WHITE));
 
 		if (fileFilter != null && fileFilter.accept(inFile.toFile())) {
 			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
@@ -100,8 +107,6 @@ public class FilePreprocessor {
 		List<String> linesToProcess = null;
 		if (!ignored)
 			linesToProcess = Files.readAllLines(inFile);
-		else
-			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
 
 		CurrentFilePreprocessAction out = null;
 
@@ -114,9 +119,13 @@ public class FilePreprocessor {
 
 			// Stop certain file types to be preprocessed (e.g. ".png")
 			if (ignored) {
+				if (targetSubSourceDir.equals(currentVersionDir)) {
+					continue;
+				}
 				if (verbose) {
 					System.out.println(String.format("into version %s%s%s", CYAN, versionName, WHITE));
 				}
+				System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
 				Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING);
 				continue;
 			}
@@ -149,7 +158,7 @@ public class FilePreprocessor {
 	 */
 	public List<String> preprocessLines(List<String> inLines, Path outFile, String version, String extension) throws Exception {
 		List<String> lines = processor.preprocess(version, inLines, extension);
-		writeLines(inLines, outFile);
+		writeLines(lines, outFile);
 		return lines;
 	}
 
@@ -165,7 +174,6 @@ public class FilePreprocessor {
 	private void writeLines(List<String> inLines, Path outFile) throws Exception {
 		// Lock the file
 		Discombobulator.pathLock.scheduleAndLock(outFile);
-
 		// Write file and update last modified date
 		Files.createDirectories(outFile.getParent());
 

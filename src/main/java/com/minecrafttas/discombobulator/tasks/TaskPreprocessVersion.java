@@ -75,11 +75,11 @@ public class TaskPreprocessVersion extends DefaultTask {
 
 			try {
 				// Preprocess version dir
-				Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, versionSourceDir, false);
+				Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, versionSourceDir, true);
 
 				// Preprocess in base dir
 				Path outFile = baseSourceDir.resolve(path);
-				Discombobulator.fileProcessor.preprocessFile(path, outFile, null, extension);
+				Discombobulator.fileProcessor.preprocessFile(inFile, outFile, null, extension);
 			} catch (MalformedInputException e) {
 				Discombobulator.printError(String.format("Can't process file, probably not a text file...\n Maybe add ignoredFileFormats = [\"*.%s\"] to the build.gradle?", extension), path.getFileName().toString());
 				e.printStackTrace();
