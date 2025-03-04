@@ -1,5 +1,8 @@
 package com.minecrafttas.discombobulator.tasks;
 
+import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
+import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
+
 import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,9 +65,11 @@ public class TaskPreprocessVersion extends DefaultTask {
 			throw new Exception("Version could not be found in build.gradle");
 		}
 
+		String masterVersionName = masterVersion.left();
+
 		LineFeedHelper.printMessage();
 
-		System.out.println(String.format("Preprocessing version %s...", masterVersion.left()));
+		System.out.println(String.format("Preprocessing version %s...", masterVersionName));
 
 		Path versionSourceDir = versionProjectDir.resolve("src");
 		if (!Files.exists(versionSourceDir))
@@ -77,11 +82,17 @@ public class TaskPreprocessVersion extends DefaultTask {
 			try {
 				// Preprocess version dir
 				CurrentFilePreprocessAction action = Discombobulator.fileProcessor.preprocessVersions(inFile, versionsConfig, extension, versionSourceDir, true);
-				TaskPreprocessWatch.runFileAction(action);
 
 				// Preprocess in base dir
 				Path outFile = baseSourceDir.resolve(path);
 				Discombobulator.fileProcessor.preprocessFile(inFile, outFile, null, extension);
+
+				/* Action has to run after the base dir preprocessing,
+				 * as runFileAction locks the file, and base dir preprocessing silently would fail*/
+				if (action != null) {
+					System.out.println(String.format("into version %s%s%s", CYAN, masterVersionName, WHITE));
+					TaskPreprocessWatch.runFileAction(action);
+				}
 			} catch (MalformedInputException e) {
 				Discombobulator.printError(String.format("Can't process file, probably not a text file...\n Maybe add ignoredFileFormats = [\"*.%s\"] to the build.gradle?", extension), path.getFileName().toString());
 				e.printStackTrace();
