@@ -44,11 +44,6 @@ public class TaskPreprocessWatch extends DefaultTask {
 	private List<FileWatcherThread> threads = new ArrayList<>();
 
 	private CurrentFilePreprocessAction currentFileAction = null;
-	/**
-	 * <p>The source dir in the base project that is used for version control<br>
-	 * <code>rootdir/src</code>
-	 */
-	private Path baseSourceDir;
 
 	private boolean msgSeen = false;
 
@@ -61,7 +56,6 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 		// Prepare list of physical version folders
 		Path baseProjectDir = this.getProject().getProjectDir().toPath();
-		baseSourceDir = baseProjectDir.resolve("src");
 
 		LineFeedHelper.printMessage();
 
@@ -198,6 +192,22 @@ public class TaskPreprocessWatch extends DefaultTask {
 						SafeFileOperations.nuke(targetPathToDelete);
 					} else {
 						SafeFileOperations.delete(targetPathToDelete);
+					}
+
+					Path parentDir = targetPathToDelete.getParent();
+					boolean isEmpty;
+					try {
+						isEmpty = Files.isDirectory(parentDir) && Files.list(parentDir).count() == 0L;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return;
+					}
+					if (isEmpty) {
+						if (version.equals("Base")) {
+							SafeFileOperations.nuke(parentDir);
+						} else {
+							SafeFileOperations.delete(parentDir);
+						}
 					}
 				}
 			}

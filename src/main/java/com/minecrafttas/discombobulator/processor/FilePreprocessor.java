@@ -2,7 +2,6 @@ package com.minecrafttas.discombobulator.processor;
 
 import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
 import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
-import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
 import static com.minecrafttas.discombobulator.utils.Colors.RED;
 import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
 import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
@@ -19,7 +18,6 @@ import java.util.Map.Entry;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import com.minecrafttas.discombobulator.Discombobulator;
-import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePreprocessAction;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
