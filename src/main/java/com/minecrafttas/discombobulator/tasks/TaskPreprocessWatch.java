@@ -3,7 +3,9 @@ package com.minecrafttas.discombobulator.tasks;
 import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
 import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
 import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
 import static com.minecrafttas.discombobulator.utils.Colors.RED;
+import static com.minecrafttas.discombobulator.utils.Colors.RED_BRIGHT;
 import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
 import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
 
@@ -149,7 +151,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 				// Get path relative to the root dir
 				String extension = FilenameUtils.getExtension(path.getFileName().toString());
 				try {
-
+					System.out.println(String.format("[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
 					// Preprocess in all sub versions
 					currentFileAction = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 
@@ -172,8 +174,11 @@ public class TaskPreprocessWatch extends DefaultTask {
 				if (Discombobulator.pathLock.isLocked(path))
 					return;
 
+				String version = findVersionFromPath(path, versions);
+
 				Path relativeFile = subSourceDir.relativize(path);
 
+				System.out.println(String.format("[%s%s%s]", RED_BRIGHT, version, WHITE));
 				System.out.println(String.format("Deleting %s%s%s%s%s", relativeFile.getParent(), File.separator, RED, relativeFile.getFileName().toString(), WHITE));
 				// Delete this file in other versions too
 				// Iterate through all versions
@@ -184,12 +189,16 @@ public class TaskPreprocessWatch extends DefaultTask {
 					if (targetSourceDir.equals(subSourceDir))
 						continue;
 
-					System.out.println(String.format("from version %s%s%s", CYAN, versionPair.getKey(), WHITE));
-
 					Path targetPathToDelete = targetSourceDir.resolve(relativeFile);
 
 					Discombobulator.pathLock.scheduleAndLock(targetPathToDelete);
-					SafeFileOperations.delete(targetPathToDelete);
+
+					System.out.println(String.format("from version %s%s%s", CYAN, versionPair.getKey(), WHITE));
+					if (version.equals("Base")) {
+						SafeFileOperations.nuke(targetPathToDelete);
+					} else {
+						SafeFileOperations.delete(targetPathToDelete);
+					}
 				}
 			}
 		};
@@ -264,5 +273,14 @@ public class TaskPreprocessWatch extends DefaultTask {
 		Discombobulator.pathLock.scheduleAndLock(outFile);
 		Files.createDirectories(outFile.getParent());
 		SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+	}
+
+	public static String findVersionFromPath(Path path, Map<String, Path> versions) {
+		for (Entry<String, Path> version : versions.entrySet()) {
+			if (path.startsWith(version.getValue())) {
+				return version.getKey();
+			}
+		}
+		return null;
 	}
 }
