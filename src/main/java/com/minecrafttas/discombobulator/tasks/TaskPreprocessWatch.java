@@ -1,10 +1,15 @@
 package com.minecrafttas.discombobulator.tasks;
 
+import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
 import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
 import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
+import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
+import static com.minecrafttas.discombobulator.utils.Colors.RED;
+import static com.minecrafttas.discombobulator.utils.Colors.RED_BRIGHT;
 import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
 import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.MalformedInputException;
 import java.nio.file.ClosedWatchServiceException;
@@ -39,11 +44,6 @@ public class TaskPreprocessWatch extends DefaultTask {
 	private List<FileWatcherThread> threads = new ArrayList<>();
 
 	private CurrentFilePreprocessAction currentFileAction = null;
-	/**
-	 * <p>The source dir in the base project that is used for version control<br>
-	 * <code>rootdir/src</code>
-	 */
-	private Path baseSourceDir;
 
 	private boolean msgSeen = false;
 
@@ -56,7 +56,6 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 		// Prepare list of physical version folders
 		Path baseProjectDir = this.getProject().getProjectDir().toPath();
-		baseSourceDir = baseProjectDir.resolve("src");
 
 		LineFeedHelper.printMessage();
 
@@ -72,10 +71,13 @@ public class TaskPreprocessWatch extends DefaultTask {
 			return;
 		}
 
+		versionsConfig.put("Base", baseProjectDir);
+
 		for (Entry<String, Path> versionPair : versionsConfig.entrySet()) {
 			Path subSourceDir = versionPair.getValue().resolve("src");
-			this.watch(subSourceDir, versionsConfig);
+			this.watchVersion(subSourceDir, versionsConfig);
 		}
+		//this.watchBase(versionsConfig);
 
 		// Wait for user input and cancel the task
 
@@ -104,19 +106,24 @@ public class TaskPreprocessWatch extends DefaultTask {
 	}
 
 	/**
-	 * Watches and preprocesses a source folder
+	 * Watches and preprocesses a version source folder
 	 * 
 	 * @param subSourceDir Source folder of the sub project
-	 * @param versionSet Map of versions
+	 * @param targetSet Map of target versions
 	 */
-	private void watch(Path subSourceDir, Map<String, Path> versionSet) {
+	private void watchVersion(Path subSourceDir, Map<String, Path> targetSet) {
 		String version = subSourceDir.getParent().getFileName().toString();
 		FileWatcher watcher = null;
 		try {
-			watcher = constructFileWatcher(subSourceDir, versionSet, version);
+			watcher = constructFileWatcher(subSourceDir, targetSet, version);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		if (version.equals(this.getProject().getName())) {
+			version = "Base";
+		}
+
 		threads.add(new FileWatcherThread(watcher, version));
 	}
 
@@ -131,21 +138,16 @@ public class TaskPreprocessWatch extends DefaultTask {
 			@Override
 			protected void onModifyFile(Path path) {
 
-				PathLock schedule = Discombobulator.pathLock;
-				if (schedule.isLocked(path))
+				PathLock pathLock = Discombobulator.pathLock;
+				if (pathLock.isLocked(path))
 					return;
 
 				// Get path relative to the root dir
-				Path relativeInFile = subSourceDir.relativize(path);
 				String extension = FilenameUtils.getExtension(path.getFileName().toString());
 				try {
-
+					System.out.println(String.format("[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
 					// Preprocess in all sub versions
 					currentFileAction = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
-
-					// Preprocess in base dir
-					Path outFile = baseSourceDir.resolve(relativeInFile);
-					Discombobulator.fileProcessor.preprocessFile(path, outFile, null, extension);
 
 					if (msgSeen == false) {
 						System.out.println(Colors.YELLOW + "Type 1 to also preprocess this file" + Colors.WHITE + "\n");
@@ -162,19 +164,52 @@ public class TaskPreprocessWatch extends DefaultTask {
 
 			@Override
 			protected void onDeleteFile(Path path) {
+
+				if (Discombobulator.pathLock.isLocked(path))
+					return;
+
+				String version = findVersionFromPath(path, versions);
+
 				Path relativeFile = subSourceDir.relativize(path);
+
+				System.out.println(String.format("[%s%s%s]", RED_BRIGHT, version, WHITE));
+				System.out.println(String.format("Deleting %s%s%s%s%s", relativeFile.getParent(), File.separator, RED, relativeFile.getFileName().toString(), WHITE));
 				// Delete this file in other versions too
 				// Iterate through all versions
 				for (Entry<String, Path> versionPair : versions.entrySet()) {
 					Path targetProject = versionPair.getValue();
+					Path targetSourceDir = targetProject.resolve("src");
 
-					if (targetProject.equals(subSourceDir))
+					if (targetSourceDir.equals(subSourceDir))
 						continue;
 
-					SafeFileOperations.delete(targetProject.resolve(relativeFile));
+					Path targetPathToDelete = targetSourceDir.resolve(relativeFile);
+
+					Discombobulator.pathLock.scheduleAndLock(targetPathToDelete);
+
+					System.out.println(String.format("from version %s%s%s", CYAN, versionPair.getKey(), WHITE));
+					if (version.equals("Base")) {
+						SafeFileOperations.nuke(targetPathToDelete);
+					} else {
+						SafeFileOperations.delete(targetPathToDelete);
+					}
+
+					Path parentDir = targetPathToDelete.getParent();
+					boolean isEmpty;
+					try {
+						isEmpty = Files.isDirectory(parentDir) && Files.list(parentDir).count() == 0L;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return;
+					}
+					if (isEmpty) {
+						if (version.equals("Base")) {
+							SafeFileOperations.nuke(parentDir);
+						} else {
+							SafeFileOperations.delete(parentDir);
+						}
+					}
 				}
-				// Delete this file in base project
-				SafeFileOperations.delete(baseSourceDir.resolve(relativeFile));
 			}
 		};
 	}
@@ -248,5 +283,14 @@ public class TaskPreprocessWatch extends DefaultTask {
 		Discombobulator.pathLock.scheduleAndLock(outFile);
 		Files.createDirectories(outFile.getParent());
 		SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+	}
+
+	public static String findVersionFromPath(Path path, Map<String, Path> versions) {
+		for (Entry<String, Path> version : versions.entrySet()) {
+			if (path.startsWith(version.getValue())) {
+				return version.getKey();
+			}
+		}
+		return null;
 	}
 }

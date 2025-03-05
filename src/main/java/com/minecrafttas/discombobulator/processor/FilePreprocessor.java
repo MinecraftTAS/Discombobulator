@@ -131,7 +131,7 @@ public class FilePreprocessor {
 			}
 
 			// Preprocess the lines
-			List<String> outLines = processor.preprocess(versionName, linesToProcess, extension);
+			List<String> outLines = processor.preprocess(versionName.equals("Base") ? null : versionName, linesToProcess, extension);
 
 			// If the version equals the original version, then skip it
 			if (targetSubSourceDir.equals(currentVersionDir)) {
@@ -139,10 +139,11 @@ public class FilePreprocessor {
 				continue;
 			}
 
-			preprocessLines(outLines, outFile, versionName, extension);
 			if (verbose) {
 				System.out.println(String.format("into version %s%s%s", CYAN, versionName, WHITE));
 			}
+			// Write lines to file
+			writeLines(outLines, outFile);
 		}
 		return out;
 	}
