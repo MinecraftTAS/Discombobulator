@@ -91,10 +91,11 @@ public class TaskPreprocessWatch extends DefaultTask {
 						System.out.println("No recent file exists...\n");
 						continue;
 					}
-					TaskPreprocessWatch.runFileAction(currentFileAction);
-					currentFileAction = null;
 
+					TaskPreprocessWatch.runFileAction(currentFileAction);
 					System.out.println(String.format("Preprocessed the recently edited file %s%s%s\n", PURPLE, currentFileAction.outFile().getFileName(), WHITE));
+
+					currentFileAction = null;
 				}
 			}
 		} catch (IOException e1) {
@@ -280,6 +281,7 @@ public class TaskPreprocessWatch extends DefaultTask {
 		Path outFile = currentFileAction.outFile();
 		List<String> outLines = currentFileAction.outLines();
 
+		Discombobulator.pathLock.scheduleAndLock(outFile.getParent());
 		Discombobulator.pathLock.scheduleAndLock(outFile);
 		Files.createDirectories(outFile.getParent());
 		SafeFileOperations.write(outFile, outLines, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
