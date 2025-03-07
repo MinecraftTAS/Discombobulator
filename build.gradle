@@ -42,8 +42,8 @@ test {
 publishing {
 	repositories {
 		maven {
-			name = "mgnetwork"
-			url = "https://maven.mgnet.work/main"
+			name = "minecrafttas"
+			url = "https://maven.minecrafttas.com/main"
 			credentials(PasswordCredentials)
 			authentication {
 				basic(BasicAuthentication)
