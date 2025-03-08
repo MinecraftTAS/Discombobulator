@@ -16,7 +16,7 @@ import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskAction;
 
 /**
- * This task builds and collects all version
+ * Builds and moves all built versions into one directory for easier access
  * 
  * @author Pancake
  */
@@ -27,6 +27,9 @@ public class TaskCollectBuilds extends DefaultTask {
 	 */
 	private Map<String, Path> buildDirs = new HashMap<>();
 
+	/**
+	 * The main task component
+	 */
 	@TaskAction
 	public void collectBuilds() {
 		Path collectDir = getBuildDir(getProject());

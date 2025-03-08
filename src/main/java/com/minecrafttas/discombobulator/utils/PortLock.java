@@ -8,10 +8,10 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
 /**
- * Lock a port with a socket. Prevents running a code twice at the same time
+ * Lock a port with a socket. Prevents running discombobulator twice at the same time
  * @author Pancake
  */
-public class SocketLock {
+public class PortLock {
 
 	/**
 	 * Server locking the port
@@ -27,7 +27,7 @@ public class SocketLock {
 	 * Creates a socket lock for a port
 	 * @param port Port to lock
 	 */
-	public SocketLock(int port) {
+	public PortLock(int port) {
 		this.port = port;
 		System.out.println(String.format("Locking Port %s%s%s\n", GREEN, port, WHITE));
 		try {

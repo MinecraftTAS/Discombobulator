@@ -22,4 +22,4 @@ jobs:
       with:
         gradle-version: 8.13
     - name: Publish
-      run: gradle publishAllPublicationsToMinecrafttasMainRepository -PminecrafttasMainUsername=${{ secrets.MAVEN_NAME }} -PminecrafttasMainPassword=${{ secrets.MAVEN_SECRET }}
+      run: gradle publishAllPublicationsToMinecrafttasMainRepository -Prelease=true -PminecrafttasMainUsername=${{ secrets.MAVEN_NAME }} -PminecrafttasMainPassword=${{ secrets.MAVEN_SECRET }}

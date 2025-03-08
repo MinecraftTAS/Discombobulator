@@ -10,5 +10,7 @@ discombobulator {
 	
 	ignoredFileFormats = ["*.png"]
 	
+	defaultLineFeed = "\n"
+	
 	disableAnsi = false
 }

@@ -31,11 +31,12 @@ import com.minecrafttas.discombobulator.utils.Colors;
 import com.minecrafttas.discombobulator.utils.FileWatcher;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.PathLock;
+import com.minecrafttas.discombobulator.utils.PortLock;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
-import com.minecrafttas.discombobulator.utils.SocketLock;
 
 /**
- * This task preprocesses the source code on file change
+ * Starts a file watcher in the source foulders and preprocesses any changed file,<br>
+ * then copies the changes into other versions + base folder
  * 
  * @author Pancake, Scribble
  */
@@ -48,10 +49,10 @@ public class TaskPreprocessWatch extends DefaultTask {
 	private boolean msgSeen = false;
 
 	@TaskAction
-	public void preprocessWatch() {
+	public void preprocessWatch() throws Exception {
 		System.out.println(Discombobulator.getSplash());
 		// Lock port
-		var lock = new SocketLock(Discombobulator.PORT_LOCK);
+		var lock = new PortLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 
 		// Prepare list of physical version folders
