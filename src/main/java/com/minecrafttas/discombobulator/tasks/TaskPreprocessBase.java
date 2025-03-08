@@ -14,22 +14,31 @@ import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.processor.FilePreprocessor;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
-import com.minecrafttas.discombobulator.utils.SocketLock;
+import com.minecrafttas.discombobulator.utils.PortLock;
 
 /**
- * This task preprocesses the base source code into all versions.
+ * Takes all files in the base folder, preprocesses them<br>
+ * and copies the changed files into the versions folders
+ * 
+ * <pre>
+ * 
+ *                                 rootDir/1.14.4/src
+ * rootDir/src/main...   --&gt;       rootDir/1.12.2/src
+ *                                 rootDir/1.8.9/src
+ * 
+ * </pre>
  * 
  * @author Pancake, Scribble
  */
 public class TaskPreprocessBase extends DefaultTask {
 
 	@TaskAction
-	public void preprocessBase() {
+	public void preprocessBase() throws Exception {
 
 		System.out.println(Discombobulator.getSplash());
 
 		// Lock port
-		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
+		PortLock lock = new PortLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 
 		// Prepare list of physical version folders

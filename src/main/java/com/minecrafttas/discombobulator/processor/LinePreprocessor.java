@@ -14,13 +14,13 @@ import com.minecrafttas.discombobulator.utils.Pair;
  * Welcome to the madness that is this preprocessor. Here I will try as best as I can to explain how this works.
  * Why am I explaining it? Because my hope is, that at least I can remember what the hell I was doing when I made this
  * 
- * Start of with the "preprocess" method which is the only public method here.
+ * Start with the "preprocess" method which is the only public method here.
  */
 
 /**
  * The main preprocessor component
+ * 
  * @author Scribble
- *
  */
 public class LinePreprocessor {
 	private final Pattern regexBlocks = Pattern.compile("^\\s*\\/\\/ *(#+) *(.+)");

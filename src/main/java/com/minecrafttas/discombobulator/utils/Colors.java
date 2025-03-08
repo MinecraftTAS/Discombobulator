@@ -2,6 +2,11 @@ package com.minecrafttas.discombobulator.utils;
 
 import com.minecrafttas.discombobulator.Discombobulator;
 
+/**
+ * Slightly modified ANSI color class
+ * 
+ * @author arshshaikh06
+ */
 public enum Colors {
 	RESET("\033[0m"),
 

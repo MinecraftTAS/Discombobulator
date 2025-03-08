@@ -23,13 +23,31 @@ import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 
+/**
+ * Handles preprocessing entire files, but delegating the actual preprocessing to the {@link LinePreprocessor} 
+ * 
+ * @author Scribble
+ */
 public class FilePreprocessor {
 
-	private final LinePreprocessor processor;
+	/**
+	 * The {@link LinePreprocessor}.<br>
+	 * Iterates through all lines and decides which lines to uncomment or comment out.
+	 */
+	private final LinePreprocessor lineProcessor;
+	/**
+	 * The {@link WildcardFileFilter}.<br>
+	 * Used for skipping certain files to be preprocessed, as e.g. binary files can't be preprocessed by the {@link LinePreprocessor}
+	 */
 	private final WildcardFileFilter fileFilter;
 
+	/**
+	 * Creates a new {@link FilePreprocessor}
+	 * @param processor The {@link #lineProcessor}
+	 * @param fileFilter The {@link #fileFilter}
+	 */
 	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter) {
-		this.processor = processor;
+		this.lineProcessor = processor;
 		this.fileFilter = fileFilter;
 	}
 
@@ -131,7 +149,7 @@ public class FilePreprocessor {
 			}
 
 			// Preprocess the lines
-			List<String> outLines = processor.preprocess(versionName.equals("Base") ? null : versionName, linesToProcess, extension);
+			List<String> outLines = lineProcessor.preprocess(versionName.equals("Base") ? null : versionName, linesToProcess, extension);
 
 			// If the version equals the original version, then skip it
 			if (targetSubSourceDir.equals(currentVersionDir)) {
@@ -158,7 +176,7 @@ public class FilePreprocessor {
 	 * @throws Exception
 	 */
 	public List<String> preprocessLines(List<String> inLines, Path outFile, String version, String extension) throws Exception {
-		List<String> lines = processor.preprocess(version, inLines, extension);
+		List<String> lines = lineProcessor.preprocess(version, inLines, extension);
 		writeLines(lines, outFile);
 		return lines;
 	}
@@ -218,10 +236,16 @@ public class FilePreprocessor {
 		});
 	}
 
+	/**
+	 * @return The {@link #lineProcessor}
+	 */
 	public LinePreprocessor getLineProcessor() {
-		return processor;
+		return lineProcessor;
 	}
 
+	/**
+	 * @return The {@link #fileFilter}
+	 */
 	public WildcardFileFilter getFileFilter() {
 		return fileFilter;
 	}

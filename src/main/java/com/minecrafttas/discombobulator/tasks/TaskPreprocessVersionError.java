@@ -13,6 +13,10 @@ import org.gradle.api.tasks.TaskAction;
  */
 public class TaskPreprocessVersionError extends DefaultTask {
 
+	/**
+	 * Just throws an exception. Nothing else
+	 * @throws Exception
+	 */
 	@TaskAction
 	public void preprocessVersion() throws Exception {
 		throw new Exception("\n\n!!!!!!!!!! Do not use this task on the root project !!!!!!!!!!\n\n"

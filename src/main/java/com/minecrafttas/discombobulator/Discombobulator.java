@@ -26,7 +26,7 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 
-import com.minecrafttas.discombobulator.extensions.PreprocessingConfiguration;
+import com.minecrafttas.discombobulator.config.PreprocessingConfiguration;
 import com.minecrafttas.discombobulator.processor.FilePreprocessor;
 import com.minecrafttas.discombobulator.processor.LinePreprocessor;
 import com.minecrafttas.discombobulator.tasks.TaskCollectBuilds;
@@ -40,15 +40,20 @@ import com.minecrafttas.discombobulator.utils.PathLock;
 /**
  * Gradle plugin main class
  * 
- * @author Pancake
+ * @author Pancake, Scribble
  */
 public class Discombobulator implements Plugin<Project> {
 
+	/**
+	 * Which port to lock
+	 */
 	public static int PORT_LOCK = 8762;
 
 	public static PreprocessingConfiguration config;
 
 	public static boolean DISABLE_ANSI = false;
+
+	public static String DEFAULT_LINE_FEED = System.lineSeparator();
 
 	public static FilePreprocessor fileProcessor;
 
@@ -98,6 +103,7 @@ public class Discombobulator implements Plugin<Project> {
 			boolean inverted = config.getInverted().getOrElse(false);
 			PORT_LOCK = config.getPort().getOrElse(8762);
 			DISABLE_ANSI = config.getDisableAnsi().getOrElse(false);
+			DEFAULT_LINE_FEED = config.getDefaultLineFeed().getOrElse(System.lineSeparator());
 
 			Map<String, Path> versionPairs = null;
 			Path projectDir = _project.getProjectDir().toPath();
@@ -157,11 +163,26 @@ public class Discombobulator implements Plugin<Project> {
 		return versions;
 	}
 
+	/**
+	 * Centers any given text
+	 * @param text The text to print
+	 * @return The centered text
+	 */
 	private static String getCenterText(String text) {
 		int length = text.length();
 		return getCenterText(text, length);
 	}
 
+	/**
+	 * Centers any given text
+	 * 
+	 * This method is used if ANSI colors are in the text which are not rendered,<br>
+	 * but are still counted in String.length();
+	 * 
+	 * @param text The text to print
+	 * @param length The length of the text
+	 * @return The centered text
+	 */
 	private static String getCenterText(String text, int length) {
 		int total = 31;
 		if (length % 2 == 0) {
@@ -170,14 +191,26 @@ public class Discombobulator implements Plugin<Project> {
 		return String.format("%s%s", " ".repeat(total - length / 2), text);
 	}
 
-	public static void printError(String line) {
-		System.err.println(Colors.RED + line + Colors.WHITE);
+	/**
+	 * Prints an error in red to the console
+	 * @param msg The error message to print
+	 */
+	public static void printError(String msg) {
+		System.err.println(Colors.RED + msg + Colors.WHITE);
 	}
 
-	public static void printError(String line, String filename) {
-		printError(String.format("[%s] %s", filename, line));
+	/**
+	 * Print an error to the console in red together with the file where this error occured in
+	 * @param msg The error message to print
+	 * @param filename The filename of the file where this error occured
+	 */
+	public static void printError(String msg, String filename) {
+		printError(String.format("[%s] %s", filename, msg));
 	}
 
+	/**
+	 * @return The splash with ANSI colors
+	 */
 	private static String getColoredSplash() {
 		return "[0m [1;31m([0m\n"
 				+ " [1;31m)\\[0m [1;31m)[0m                         [1;31m)[0m         [1;31m)[0m      [1;31m([0m         [1;31m)[0m\n"
@@ -189,6 +222,9 @@ public class Discombobulator implements Plugin<Project> {
 				+ "[0m [32m|___/|_/__|__\\___/_|_|_| |_.__/\\___/_.__/\\_,_|_\\__,_|\\__\\___/_|[37m\n";
 	}
 
+	/**
+	 * @return The splash without ANSI colors
+	 */
 	private static String getColorLessSplash() {
 		return " (                                                                 \n"
 				+ " )\\ )                         )         )      (         )         \n"

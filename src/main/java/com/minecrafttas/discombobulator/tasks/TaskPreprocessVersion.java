@@ -18,10 +18,18 @@ import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePre
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.Pair;
-import com.minecrafttas.discombobulator.utils.SocketLock;
+import com.minecrafttas.discombobulator.utils.PortLock;
 
 /**
- * Task for preprocessing one version into all other versions including the base source
+ * <p>Preprocesses one version into all other versions including the base source
+ * 
+ * <p>(If the task was run on 1.14.4)
+ * <pre>
+ *                                 rootDir/src
+ * rootDir/1.14.4/src/   --&gt;       rootDir/1.12.2/src
+ *                                 rootDir/1.8.9/src
+ * 
+ * </pre>
  * 
  * @author Scribble
  */
@@ -32,7 +40,7 @@ public class TaskPreprocessVersion extends DefaultTask {
 		System.out.println(Discombobulator.getSplash());
 
 		// Lock port
-		SocketLock lock = new SocketLock(Discombobulator.PORT_LOCK);
+		PortLock lock = new PortLock(Discombobulator.PORT_LOCK);
 		lock.tryLock();
 
 		// Prepare list of physical version folders
