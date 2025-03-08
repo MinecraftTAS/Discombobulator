@@ -20,7 +20,4 @@ jobs:
       with:
         gradle-version: 8.13
     - name: Publish
-      run: gradle publishAllPublicationsToMinecrafttasSnapshotsRepository
-      env:
-        MAVEN_NAME: ${{ secrets.MAVEN_NAME }}
-        MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
+      run: gradle publishAllPublicationsToMinecrafttasSnapshotsRepository -PminecrafttasSnapshotsUsername=${{ secrets.MAVEN_NAME }} -PminecrafttasSnapshotsPassword=${{ secrets.MAVEN_SECRET }}
