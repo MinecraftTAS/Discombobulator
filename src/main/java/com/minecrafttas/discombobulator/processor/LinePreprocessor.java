@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 
 import com.minecrafttas.discombobulator.utils.Pair;
 
-/*Welcome to the madness that is this preprocessor. Here I will try as best as I can to explain how this works.
+/*
+ * Welcome to the madness that is this preprocessor. Here I will try as best as I can to explain how this works.
  * Why am I explaining it? Because my hope is, that at least I can remember what the hell I was doing when I made this
  * 
  * Start of with the "preprocess" method which is the only public method here.
@@ -48,7 +49,7 @@ public class LinePreprocessor {
 	 * "1.20",
 	 * "1.19",
 	 * "1.18",
-	 * "1.16" <- default version since it's the lowest
+	 * "1.16" &lt;- default version since it's the lowest
 	 * ]
 	 * </pre>
 	 * @param versions The versions to check for in an order
@@ -64,7 +65,7 @@ public class LinePreprocessor {
 	 * 
 	 * <pre>
 	 * [
-	 * "1.20", <- default version since it's the highest
+	 * "1.20", &lt;- default version since it's the highest
 	 * "1.19",
 	 * "1.18",
 	 * "1.16"
@@ -83,7 +84,7 @@ public class LinePreprocessor {
 	}
 
 	/**
-	 * Preprocesses the lines to a targeted version.
+	 * <p>Preprocesses the lines to a targeted version.
 	 * <p>Preprocessing can happen in 2 ways:<br>
 	 * <ol>
 	 * <li>Preprocessing a block of code</li>
@@ -91,7 +92,7 @@ public class LinePreprocessor {
 	 * </ol>
 	 * <p>The advantage of pattern processing is that you can save yourself some work making a version block for common patterns like <code>Minecraft.getMinecraft().player</code> in 1.12 to <code>Minecraft.getMinecraft().thePlayer</code> in e.g. 1.10
 	 *
-	 * <h2>VersionBlock</h2>
+	 * <h4>VersionBlock</h4>
 	 * <p>A version block allows you to uncomment part of the code in certain versions via comments:
 	 * <pre>
 	 * //# 1.12.2
@@ -107,7 +108,7 @@ public class LinePreprocessor {
 	 * 
 	 * <p>You can define these blocks out of order (e.g. first 1.9.4 then 1.12.2)... The version order is ultimately defined in the build.gradle.
 	 * 
-	 * <h3>Nesting</h3>
+	 * <h5>Nesting</h5>
 	 * 
 	 * <p>Sometimes you have a lot of changes in one version but a tiny amount is added in the following versions. In these cases, you would need to copy all the large changes again into the newest version:
 	 * 
@@ -139,9 +140,9 @@ public class LinePreprocessor {
 	 * than the changes in
 	 * 1.16.5
 	 * 
-	 * //## 1.16.5		<-- 2 hashtags define the nested version
+	 * //## 1.16.5		&lt;-- 2 hashtags define the nested version
 	 * New things in 1.16.5
-	 * //## end		<-- The end of the nested block is defined with 2 hashtags as well
+	 * //## end		&lt;-- The end of the nested block is defined with 2 hashtags as well
 	 * 
 	 * //# end
 	 * </pre>
@@ -157,7 +158,7 @@ public class LinePreprocessor {
 	 * <li>Using def in a nested block will use the parent version</li>
 	 * </ul>
 	 * 
-	 * <h2>Patterns</h2>
+	 * <h4>Patterns</h4>
 	 * Patterns are defined in the build.gradle:
 	 * 
 	 * <pre>
@@ -186,7 +187,7 @@ public class LinePreprocessor {
 	 * 
 	 * @param targetVersion The version for which lines should be enabled
 	 * @param lines The lines to preprocess
-	 * @param filename Debug filename for errors during preprocessing
+	 * @param fileending The fileending of the preprocess file for applying different comment types
 	 * @return The preprocessed lines of the file
 	 * @throws Exception 
 	 */
@@ -253,7 +254,7 @@ public class LinePreprocessor {
 	 * Generates a list of version blocks by prereading the block. To take nesting into account, it generates the lists recursively. Most of the error checking is done here.
 	 * <pre>
 	 * 1.16.1
-	 * 	1.16.5	<- (Nested versions)
+	 * 	1.16.5	&lt;- (Nested versions)
 	 * 	1.17.1
 	 * 	end
 	 * 1.18.1
@@ -285,7 +286,7 @@ public class LinePreprocessor {
 	 * </pre>
 	 * <p>Note that the last end has to be true, since everything outside a version block list is enabled by default
 	 * <pre>
-	 * public void example() {	<-Outside a block, so line is not commented out by default
+	 * public void example() {	&lt;-Outside a block, so line is not commented out by default
 	 * // # 1.16.1
 	 * //CODE!
 	 * // # end
