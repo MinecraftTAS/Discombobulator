@@ -7,10 +7,9 @@ plugins {
 // Change java compatibility level to 23
 sourceCompatibility = targetCompatibility = 23
 
-def snapshot = project.release ? "" : "-SNAPSHOT"
+def snapshot = project.release=="true" ? "" : "-SNAPSHOT"
 version = project.version+snapshot
 // Name, version and group for the project
-version = "1.3"
 group = "com.minecrafttas"
 archivesBaseName = "discombobulator"
 
@@ -49,10 +48,6 @@ java {
 javadoc {
 	options.locale = "en_US"
 	options.addBooleanOption('Xdoclint:none', true)
-}
-
-publishToMavenLocal {
-	version = version + "-SNAPSHOT"
 }
 
 publishing {
