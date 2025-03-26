@@ -94,6 +94,7 @@ public class FilePreprocessor {
 
 		if (fileFilter != null && fileFilter.accept(inFile.toFile())) {
 			System.out.println(String.format("Ignoring %s%s%s", YELLOW, inFile.getFileName().toString(), WHITE));
+			Files.createDirectories(outFile.getParent());
 			Files.copy(inFile, outFile, StandardCopyOption.REPLACE_EXISTING);
 			return;
 		}
