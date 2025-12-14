@@ -4,7 +4,7 @@ pluginManagement {
 		mavenCentral()
 		maven { url = "https://maven.minecrafttas.com/main" }
 		maven { url = "https://maven.fabricmc.net" }
-		maven {	url = "https://maven.legacyfabric.net/" }
+		maven { url = "https://maven.legacyfabric.net/" }
 		gradlePluginPortal()
 	}
 }
