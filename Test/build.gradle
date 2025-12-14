@@ -1,5 +1,5 @@
 plugins {
-	id 'discombobulator' version '1.3-SNAPSHOT'
+	id 'discombobulator' version "1.4-SNAPSHOT"
 }
 
 discombobulator {

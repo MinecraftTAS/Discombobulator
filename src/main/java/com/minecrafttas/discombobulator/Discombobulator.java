@@ -1,16 +1,5 @@
 package com.minecrafttas.discombobulator;
 
-import static com.minecrafttas.discombobulator.utils.Colors.BLUE;
-import static com.minecrafttas.discombobulator.utils.Colors.CYAN;
-import static com.minecrafttas.discombobulator.utils.Colors.GREEN;
-import static com.minecrafttas.discombobulator.utils.Colors.GREEN_BRIGHT;
-import static com.minecrafttas.discombobulator.utils.Colors.PURPLE;
-import static com.minecrafttas.discombobulator.utils.Colors.PURPLE_BRIGHT;
-import static com.minecrafttas.discombobulator.utils.Colors.RED;
-import static com.minecrafttas.discombobulator.utils.Colors.RED_BRIGHT;
-import static com.minecrafttas.discombobulator.utils.Colors.WHITE;
-import static com.minecrafttas.discombobulator.utils.Colors.YELLOW;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -137,7 +126,7 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static String getSplash() {
 		return "\n" + (DISABLE_ANSI ? getColorLessSplash() : getColoredSplash()) + "\n\n"
-				+ getCenterText(String.format("%sC%so%sl%so%sr%sf%su%sl%s!%s", RED, RED_BRIGHT, YELLOW, GREEN_BRIGHT, GREEN, CYAN, BLUE, PURPLE, PURPLE_BRIGHT, WHITE), 9) + "\n"
+				+ getCenterText(String.format("Now using %sGradle 9", Colors.PURPLE), 9) + "\n"
 				+ "		Created by Pancake and Scribble\n" + getCenterText(discoVersion) + "\n\n";
 
 	}
