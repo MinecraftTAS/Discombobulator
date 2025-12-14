@@ -4,35 +4,35 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
+import org.gradle.api.provider.MapProperty;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+
+import com.minecrafttas.discombobulator.Discombobulator;
 
 /**
  * Builds and moves all built versions into one directory for easier access
  * 
  * @author Pancake
  */
-public class TaskCollectBuilds extends DefaultTask {
+public abstract class TaskCollectBuilds extends DefaultTask {
 
 	/**
 	 * List of all build dirs
 	 */
-	private Map<String, Path> buildDirs = new HashMap<>();
+	@Input
+	abstract MapProperty<String, Path> getBuildDirectories();
 
 	/**
 	 * The main task component
 	 */
 	@TaskAction
 	public void collectBuilds() {
-		Path collectDir = getBuildDir(getProject());
+		Path collectDir = Discombobulator.BUILD_DIR;
 
 		try {
 			if (!Files.exists(collectDir))
@@ -42,7 +42,7 @@ public class TaskCollectBuilds extends DefaultTask {
 			return;
 		}
 
-		for (Entry<String, Path> entry : buildDirs.entrySet()) {
+		for (Entry<String, Path> entry : getBuildDirectories().get().entrySet()) {
 			Path buildDir = entry.getValue();
 			Stream<Path> stream;
 
@@ -66,26 +66,5 @@ public class TaskCollectBuilds extends DefaultTask {
 
 			stream.close();
 		}
-	}
-
-	/**
-	 * Updates this task with all compile tasks
-	 * 
-	 * @param compileTasks List of compile tasks
-	 */
-	public void updateCompileTasks(List<Task> compileTasks) {
-		for (Task task : compileTasks) {
-			Project project = task.getProject();
-			this.buildDirs.put(project.getName(), getBuildDir(project).resolve("libs"));
-		}
-		this.setDependsOn(compileTasks);
-	}
-
-	/**
-	 * @param project The project to use
-	 * @return The build directory from the project
-	 */
-	private Path getBuildDir(Project project) {
-		return project.getLayout().getBuildDirectory().get().getAsFile().toPath();
 	}
 }

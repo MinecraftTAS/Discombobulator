@@ -183,15 +183,16 @@ public class FilePreprocessor {
 		return lines;
 	}
 
-	///
-	/// 1. Locks the file to stop the filewatcher from detecting it
-	/// 2. Creates any missing directories
-	/// 3. Writes the lines with the line feed specified by the `line.seperator` system property
-	///
-	/// @param inLines
-	/// @param outFile
-	/// @throws Exception
-	///
+	/**
+	 * <ol>
+	 * <li>Locks the file to stop the filewatcher from detecting it</li>
+	 * <li>Creates any missing directories</li>
+	 * <li>Writes the lines with the line feed specified by the `line.seperator` system property</li>
+	 * </ol>
+	 * @param inLines
+	 * @param outFile
+	 * @throws Exception
+	 */
 	private void writeLines(List<String> inLines, Path outFile) throws Exception {
 		// Lock the file
 		Discombobulator.pathLock.scheduleAndLock(outFile);

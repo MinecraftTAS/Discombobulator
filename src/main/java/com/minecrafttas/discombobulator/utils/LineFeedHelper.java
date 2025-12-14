@@ -13,12 +13,12 @@ import com.minecrafttas.discombobulator.Discombobulator;
  */
 public class LineFeedHelper {
 
-	///
-	/// Prints information about the current line feed character to the console.
-	///
-	/// Including whether Disco is using the default line seperator or not
-	/// @throws Exception
-	///
+	/** 
+	 * Prints information about the current line feed character to the console.
+	 * Including whether Disco is using the default line seperator or not
+	 * 
+	 * @throws Exception
+	 */
 	public static void printMessage() throws Exception {
 		LineFeedHelper.checkLineFeed(Discombobulator.DEFAULT_LINE_FEED);
 		String property = System.getProperty("line.seperator");
@@ -32,11 +32,11 @@ public class LineFeedHelper {
 		}
 	}
 
-	///
-	/// Checks the line feed character
-	/// @param lineFeed The {@link Discombobulator#DEFAULT_LINE_FEED}
-	/// @throws Exception If the defaultLineFeed is not a line feed character
-	///
+	/**
+	 * Checks the line feed character
+	 * @param lineFeed The {@link Discombobulator#DEFAULT_LINE_FEED}
+	 * @throws Exception If the defaultLineFeed is not a line feed character
+	 */
 	public static void checkLineFeed(String lineFeed) throws Exception {
 		if (!isLineFeed(lineFeed)) {
 			throw new Exception("Property defaultLineFeed is neither \"\\r\\n\" nor \"\\n\"");

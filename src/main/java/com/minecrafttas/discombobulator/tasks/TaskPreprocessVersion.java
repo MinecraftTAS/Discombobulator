@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
@@ -33,7 +35,10 @@ import com.minecrafttas.discombobulator.utils.PortLock;
  * 
  * @author Scribble
  */
-public class TaskPreprocessVersion extends DefaultTask {
+public abstract class TaskPreprocessVersion extends DefaultTask {
+
+	@InputDirectory
+	abstract DirectoryProperty getVersionDirectory();
 
 	@TaskAction
 	public void preprocessVersion() throws Exception {
@@ -44,7 +49,7 @@ public class TaskPreprocessVersion extends DefaultTask {
 		lock.tryLock();
 
 		// Prepare list of physical version folders
-		Path baseProjectDir = this.getProject().getParent().getProjectDir().toPath();
+		Path baseProjectDir = Discombobulator.BASE_PROJECT_DIR;
 		Path baseSourceDir = baseProjectDir.resolve("src");
 
 		Map<String, Path> versionsConfig;
@@ -59,7 +64,7 @@ public class TaskPreprocessVersion extends DefaultTask {
 			return;
 		}
 
-		Path versionProjectDir = this.getProject().getProjectDir().toPath();
+		Path versionProjectDir = getVersionDirectory().get().getAsFile().toPath();
 		Pair<String, Path> masterVersion = null;
 		// Find current version in version config
 
