@@ -42,7 +42,7 @@ public class TaskPreprocessBase extends DefaultTask {
 		lock.tryLock();
 
 		// Prepare list of physical version folders
-		Path baseProjectDir = this.getProject().getProjectDir().toPath();
+		Path baseProjectDir = Discombobulator.BASE_PROJECT_DIR;
 		Map<String, Path> versionsConfig;
 		try {
 			versionsConfig = Discombobulator.getVersionPairs(baseProjectDir);

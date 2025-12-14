@@ -3,6 +3,7 @@ package com.minecrafttas.discombobulator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,21 +34,50 @@ import com.minecrafttas.discombobulator.utils.PathLock;
  */
 public class Discombobulator implements Plugin<Project> {
 
-	/**
-	 * Which port to lock
-	 */
+	///
+	/// Which port to lock
+	/// 
 	public static int PORT_LOCK = 8762;
 
+	///
+	/// The config set in the build.gradle file of the discombobulator
+	/// 
 	public static PreprocessingConfiguration config;
 
+	///
+	/// If true: Disables color output in the console
+	/// 
 	public static boolean DISABLE_ANSI = false;
 
+	///
+	/// Whether to use Windows or Unix style line feeds
+	/// 
 	public static String DEFAULT_LINE_FEED = System.lineSeparator();
 
+	///
+	/// The base dir of the project
+	/// 
+	public static Path BASE_PROJECT_DIR;
+
+	///
+	/// The base build directory, usually {@link #BASE_PROJECT_DIR}/build
+	/// 
+	public static Path BUILD_DIR;
+
+	///
+	/// The {@link FilePreprocessor}
+	/// 
 	public static FilePreprocessor fileProcessor;
 
+	///
+	/// The {@link PathLock}
+	/// 
 	public static PathLock pathLock;
 
+	///
+	/// The version of Discombobulator,
+	/// used for the splash in the console
+	/// 
 	private static String discoVersion;
 
 	/**
@@ -61,27 +91,42 @@ public class Discombobulator implements Plugin<Project> {
 		pathLock = new PathLock();
 
 		// Register tasks
+
+		/// preprocessBase	///
 		TaskPreprocessBase baseTask = project.getTasks().register("preprocessBase", TaskPreprocessBase.class).get();
 		baseTask.setGroup("discombobulator");
 		baseTask.setDescription("Split base source into seperate version folders");
 
+		/// preprocessWatch	///
 		TaskPreprocessWatch watchTask = project.getTasks().register("preprocessWatch", TaskPreprocessWatch.class).get();
 		watchTask.setGroup("discombobulator");
 		watchTask.setDescription("Starts a watch session. Preprocesses files into other versions on file change.");
+		watchTask.setProperty("projectName", project.getName());
 
+		/// collectBuilds	///
 		TaskCollectBuilds collectBuilds = project.getTasks().register("collectBuilds", TaskCollectBuilds.class).get();
 		collectBuilds.setGroup("discombobulator");
 		collectBuilds.setDescription("Builds, then collects all versions in root/build");
 
-		List<Task> compileTasks = new ArrayList<>();
+		List<Task> compileTaskList = new ArrayList<>();
+		Map<String, Path> buildDirs = new HashMap<>();
 		for (Project subProject : project.getSubprojects()) {
-			compileTasks.add(subProject.getTasksByName("remapJar", false).iterator().next());
+			Task compileTask = subProject.getTasksByName("remapJar", false).iterator().next();
+			compileTaskList.add(compileTask);
+
+			buildDirs.put(subProject.getName(), getBuildDir(subProject).resolve("libs"));
+		}
+		collectBuilds.setDependsOn(compileTaskList);
+		collectBuilds.setProperty("buildDirectories", buildDirs);
+
+		/// preprocessVersion ///
+		for (Project subProject : project.getSubprojects()) {
 			// Register preprocessVersion task in subProjects
 			TaskPreprocessVersion versionTask = subProject.getTasks().register("preprocessVersion", TaskPreprocessVersion.class).get();
+			versionTask.setProperty("versionDirectory", subProject.getProjectDir());
 			versionTask.setGroup("discombobulator");
 			versionTask.setDescription("Preprocesses this version back to the base folder and to versions other than this one");
 		}
-		collectBuilds.updateCompileTasks(compileTasks);
 
 		// Register preprocessVersion task in root
 		TaskPreprocessVersionError versionTaskRoot = project.getTasks().register("preprocessVersion", TaskPreprocessVersionError.class).get();
@@ -93,11 +138,12 @@ public class Discombobulator implements Plugin<Project> {
 			PORT_LOCK = config.getPort().getOrElse(8762);
 			DISABLE_ANSI = config.getDisableAnsi().getOrElse(false);
 			DEFAULT_LINE_FEED = config.getDefaultLineFeed().getOrElse(System.lineSeparator());
+			BASE_PROJECT_DIR = _project.getProjectDir().toPath();
+			BUILD_DIR = getBuildDir(_project);
 
 			Map<String, Path> versionPairs = null;
-			Path projectDir = _project.getProjectDir().toPath();
 			try {
-				versionPairs = getVersionPairs(projectDir);
+				versionPairs = getVersionPairs(BASE_PROJECT_DIR);
 			} catch (Exception e) {
 				if (e.getMessage() != null && !e.getMessage().isEmpty()) {
 					printError(e.getMessage());
@@ -126,8 +172,9 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static String getSplash() {
 		return "\n" + (DISABLE_ANSI ? getColorLessSplash() : getColoredSplash()) + "\n\n"
-				+ getCenterText(String.format("Now using %sGradle 9", Colors.PURPLE), 9) + "\n"
-				+ "		Created by Pancake and Scribble\n" + getCenterText(discoVersion) + "\n\n";
+				+ getCenterText(String.format("Enable configuration cache today!")) + "\n"
+				+ getCenterText("Created by Pancake and Scribble") + "\n"
+				+ getCenterText(discoVersion) + "\n\n";
 
 	}
 
@@ -160,6 +207,14 @@ public class Discombobulator implements Plugin<Project> {
 	private static String getCenterText(String text) {
 		int length = text.length();
 		return getCenterText(text, length);
+	}
+
+	/**
+	 * @param project The project to use
+	 * @return The build directory from the project
+	 */
+	public static Path getBuildDir(Project project) {
+		return project.getLayout().getBuildDirectory().get().getAsFile().toPath();
 	}
 
 	/**
