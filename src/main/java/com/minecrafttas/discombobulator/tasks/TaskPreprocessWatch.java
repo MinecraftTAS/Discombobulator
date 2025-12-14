@@ -264,22 +264,25 @@ public abstract class TaskPreprocessWatch extends DefaultTask {
 		}
 	}
 
-	/// Stores data used for preprocessing the file that was edited most recently.
-	///
-	/// This fixes an issue where the IDE will behave weirdly, when trying to
-	/// preprocess and replace a file, that is currently being worked on. So when
-	/// saving a file, The file watcher would also replace the file that you just
-	/// saved, leading to discrepancies and annoyances.
-	///
-	/// With this, you can execute the preprocessing at a later time.
-	///
-	/// @author Scribble ///
+	/**
+	 *  Stores data used for preprocessing the file that was edited most recently.
+	 *
+	 * This fixes an issue where the IDE will behave weirdly, when trying to
+	 * preprocess and replace a file, that is currently being worked on. So when
+	 * saving a file, The file watcher would also replace the file that you just
+	 * saved, leading to discrepancies and annoyances.
+	 *
+	 * With this, you can execute the preprocessing at a later time.
+	 *
+	 * @author Scribble
+	 */
 	public static record CurrentFilePreprocessAction(List<String> outLines, Path inFile, Path outFile) {
 	}
 
-	/// Runs the {@link CurrentFilePreprocessAction}
-	///
-	/// @param currentFileAction The {@link CurrentFilePreprocessAction} to run ///
+	/**
+	 * Runs the {@link CurrentFilePreprocessAction}
+	 * @param currentFileAction The {@link CurrentFilePreprocessAction} to run
+	 */
 	public static void runFileAction(CurrentFilePreprocessAction currentFileAction) throws IOException {
 		Path outFile = currentFileAction.outFile();
 		List<String> outLines = currentFileAction.outLines();
