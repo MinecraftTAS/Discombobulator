@@ -7,7 +7,7 @@ This project seeks to improve the [ReplayMod preprocessor](https://github.com/Re
 ### Syntax
 The ReplayMod preprocessor uses the following syntax:
 ```java
-    //#if MC>=11200
+    //#if MC>=1.12
     // This is the block for MC >= 1.12.0
     category.addDetail(name, callable::call);
     //#else
@@ -17,8 +17,7 @@ The ReplayMod preprocessor uses the following syntax:
 ```
 While the syntax is powerful, in practice, a lot of it is simply unnecessary and bothersome to write.  
 We noticed how we *always* use the "greater equals" syntax paired with else.  
-Furthermore, we dislike the version numbering that was chosen (11200), as it does not support snapshots versions  
-and when reading it, you always need a second untangle the version in your head, especially with 12001, 11202 or 12101
+Furthermore, we dislike the version numbering that was chosen (1.12), as it does not support snapshots versions  
 
 Hence we simplified the syntax by making it the default operator:
 ```java
@@ -34,9 +33,9 @@ With `# def` being the default lowest version
 
 ### Nesting
 ```java
-    //#if MC>=10904
+    //#if MC>=1.9.4
     public CPacketResourcePackStatus makeStatusPacket(String hash, Action action) {
-        //#if MC>=11002
+        //#if MC>=1.10.2
         return new CPacketResourcePackStatus(action);
         //#else
         //$$ return new CPacketResourcePackStatus(hash, action);
