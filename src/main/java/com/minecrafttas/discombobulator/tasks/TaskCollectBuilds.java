@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
@@ -19,6 +20,7 @@ import com.minecrafttas.discombobulator.Discombobulator;
  * 
  * @author Pancake
  */
+@CacheableTask
 public abstract class TaskCollectBuilds extends DefaultTask {
 
 	/**

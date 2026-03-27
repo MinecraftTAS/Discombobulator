@@ -25,6 +25,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FilenameUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
@@ -42,6 +43,7 @@ import com.minecrafttas.discombobulator.utils.SafeFileOperations;
  * 
  * @author Pancake, Scribble
  */
+@CacheableTask
 public abstract class TaskPreprocessWatch extends DefaultTask {
 
 	private List<FileWatcherThread> threads = new ArrayList<>();

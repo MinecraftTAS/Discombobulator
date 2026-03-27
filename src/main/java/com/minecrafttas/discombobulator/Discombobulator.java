@@ -25,6 +25,8 @@ import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersionError;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.utils.Colors;
+import com.minecrafttas.discombobulator.utils.EmergencyTransformer;
+import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.PathLock;
 
 /**
@@ -111,7 +113,7 @@ public class Discombobulator implements Plugin<Project> {
 		List<Task> compileTaskList = new ArrayList<>();
 		Map<String, Path> buildDirs = new HashMap<>();
 		for (Project subProject : project.getSubprojects()) {
-			Task compileTask = subProject.getTasksByName("remapJar", false).iterator().next();
+			Task compileTask = subProject.getTasksByName("build", false).iterator().next();
 			compileTaskList.add(compileTask);
 
 			buildDirs.put(subProject.getName(), getBuildDir(subProject).resolve("libs"));
@@ -172,7 +174,7 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static String getSplash() {
 		return "\n" + (DISABLE_ANSI ? getColorLessSplash() : getColoredSplash()) + "\n\n"
-				+ getCenterText(String.format("Enable configuration cache today!")) + "\n"
+				+ getCenterText(String.format("Now with unobfuscated support!")) + "\n"
 				+ getCenterText("Created by Pancake and Scribble") + "\n"
 				+ getCenterText(discoVersion) + "\n\n";
 
