@@ -160,7 +160,10 @@ public class Discombobulator implements Plugin<Project> {
 			List<String> ignored = config.getIgnoredFileFormats().getOrElse(new ArrayList<>());
 			WildcardFileFilter fileFilter = WildcardFileFilter.builder().setWildcards(ignored).get();
 
-			fileProcessor = new FilePreprocessor(processor, fileFilter);
+			Map<String, Map<String, Pair<String, String>>> emergencyTransformConfig = config.getEmergencyTransform().getOrNull();
+			EmergencyTransformer emergencyTransformer = new EmergencyTransformer(emergencyTransformConfig);
+
+			fileProcessor = new FilePreprocessor(processor, fileFilter, emergencyTransformer);
 
 			// Yes this is yoinked from the gradle forums to get the disco version. Is there
 			// a better method? Probably. Do I care? Currently, no.

@@ -20,6 +20,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePreprocessAction;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
+import com.minecrafttas.discombobulator.utils.EmergencyTransformer;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 
@@ -40,15 +41,22 @@ public class FilePreprocessor {
 	 * Used for skipping certain files to be preprocessed, as e.g. binary files can't be preprocessed by the {@link LinePreprocessor}
 	 */
 	private final WildcardFileFilter fileFilter;
+	/**
+	 * The {@link EmergencyTransformer}.<br>
+	 * Used for search and replacing files that don't allow comments
+	 */
+	private final EmergencyTransformer emergencyTransformer;
 
 	/**
 	 * Creates a new {@link FilePreprocessor}
 	 * @param processor The {@link #lineProcessor}
 	 * @param fileFilter The {@link #fileFilter}
+	 * @param emergencyTransformer The {@link EmergencyTransformer}
 	 */
-	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter) {
+	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter, EmergencyTransformer emergencyTransformer) {
 		this.lineProcessor = processor;
 		this.fileFilter = fileFilter;
+		this.emergencyTransformer = emergencyTransformer;
 	}
 
 	/**
