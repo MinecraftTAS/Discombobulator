@@ -154,7 +154,7 @@ public abstract class TaskPreprocessWatch extends DefaultTask {
 				// Get path relative to the root dir
 				String extension = FilenameUtils.getExtension(path.getFileName().toString());
 				try {
-					System.out.println(String.format("[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
+					System.out.println(String.format("\n[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
 					// Preprocess in all sub versions
 					currentFileAction = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 
