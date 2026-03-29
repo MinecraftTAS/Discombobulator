@@ -41,11 +41,6 @@ public class FilePreprocessor {
 	 * Used for skipping certain files to be preprocessed, as e.g. binary files can't be preprocessed by the {@link LinePreprocessor}
 	 */
 	private final WildcardFileFilter fileFilter;
-	/**
-	 * The {@link EmergencyTransformer}.<br>
-	 * Used for search and replacing files that don't allow comments
-	 */
-	private final EmergencyTransformer emergencyTransformer;
 
 	/**
 	 * Creates a new {@link FilePreprocessor}
@@ -53,10 +48,9 @@ public class FilePreprocessor {
 	 * @param fileFilter The {@link #fileFilter}
 	 * @param emergencyTransformer The {@link EmergencyTransformer}
 	 */
-	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter, EmergencyTransformer emergencyTransformer) {
+	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter) {
 		this.lineProcessor = processor;
 		this.fileFilter = fileFilter;
-		this.emergencyTransformer = emergencyTransformer;
 	}
 
 	/**
@@ -187,6 +181,7 @@ public class FilePreprocessor {
 	 */
 	public List<String> preprocessLines(List<String> inLines, Path outFile, String version, String extension) throws Exception {
 		List<String> lines = lineProcessor.preprocess(version, inLines, extension);
+
 		writeLines(lines, outFile);
 		return lines;
 	}

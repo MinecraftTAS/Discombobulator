@@ -6,7 +6,6 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 
-import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.PortLock;
 
 /**
@@ -127,9 +126,15 @@ public abstract class PreprocessingConfiguration {
 	 */
 	public abstract Property<String> getDefaultLineFeed();
 
+//	/**
+//	 * <p>If a file needs transforming but does not support comments
+//	 * @return A map with the version number as key and a map as value which contains the filename and a pair of strings with search and replace respectively
+//	 */
+//	public abstract MapProperty<String, Map<String, Pair<String, String>>> getEmergencyTransform();
+
 	/**
-	 * <p>If a file needs transforming but does not support comments
-	 * @return A map with the version number as key and a map as value which contains the filename and a pair of strings with search and replace respectively
+	 * @return Versions where the accesswidener is changed to official mappings
 	 */
-	public abstract MapProperty<String, Map<String, Pair<String, String>>> getEmergencyTransform();
+	public abstract ListProperty<String> getAccessWidenerOfficial();
+
 }

@@ -1,7 +1,6 @@
 package com.minecrafttas.discombobulator.utils;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,46 +11,38 @@ public class EmergencyTransformer {
 
 	private Map<String, Map<String, Pair<String, String>>> config;
 
-	public EmergencyTransformer(Map<String, Map<String, Pair<String, String>>> config) {
+	public EmergencyTransformer(Map<String, Map<String, Pair<String, String>>> config, List<String> versionStrings) {
 		this.config = config;
 	}
 
-	public List<String> transform(String targetVersion, Path file, List<String> lines) {
-		Map<String, Pair<String, String>> version = config.getOrDefault(targetVersion, new HashMap<>());
+	public List<String> transform(String sourceVersion, String targetVersion, Path file, List<String> lines) {
 
-		for (Entry<String, Pair<String, String>> filePatterns : version.entrySet()) {
-			String pattern = filePatterns.getKey();
-			Pair<String, String> searchReplace = filePatterns.getValue();
-			String search = searchReplace.left();
-			String replace = searchReplace.right();
-
-			replaceLines(file, lines, pattern, search, replace);
+		for (Entry<String, Map<String, Pair<String, String>>> filePattern : config.entrySet()) {
+			WildcardFileFilter filter = WildcardFileFilter.builder().setWildcards(filePattern.getKey()).get();
+			if (filter.matches(file)) {
+				Map<String, Pair<String, String>> versions = filePattern.getValue();
+				replaceVersion(targetVersion, lines, versions);
+			}
 		}
 
 		return lines;
 	}
 
-	public List<String> reverseTransform(String targetVersion, Path file, List<String> lines) {
-		Map<String, Pair<String, String>> version = config.getOrDefault(targetVersion, new HashMap<>());
-
-		for (Entry<String, Pair<String, String>> filePatterns : version.entrySet()) {
-			String pattern = filePatterns.getKey();
-			Pair<String, String> searchReplace = filePatterns.getValue();
-			String search = searchReplace.left();
-			String replace = searchReplace.right();
-
-			replaceLines(file, lines, pattern, replace, search);
+	private void replaceVersion(String targetVersion, List<String> lines, Map<String, Pair<String, String>> versions) {
+		for (Entry<String, Pair<String, String>> version : versions.entrySet()) {
+			if (targetVersion.equals(version.getKey())) {
+				replaceLines(lines, version);
+			}
 		}
-
-		return lines;
 	}
 
-	private void replaceLines(Path file, List<String> lines, String pattern, String search, String replace) {
-		WildcardFileFilter filter = WildcardFileFilter.builder().setWildcards(pattern).get();
-		if (filter.matches(file)) {
-			lines.forEach(line -> {
-				line = line.replace(search, replace);
-			});
-		}
+	private void replaceLines(List<String> lines, Entry<String, Pair<String, String>> version) {
+		Pair<String, String> searchReplace = version.getValue();
+		String search = searchReplace.left();
+		String replace = searchReplace.right();
+
+		lines.forEach(line -> {
+			line = line.replace(search, replace);
+		});
 	}
 }

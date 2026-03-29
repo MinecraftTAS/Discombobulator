@@ -25,8 +25,6 @@ import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersion;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessVersionError;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch;
 import com.minecrafttas.discombobulator.utils.Colors;
-import com.minecrafttas.discombobulator.utils.EmergencyTransformer;
-import com.minecrafttas.discombobulator.utils.Pair;
 import com.minecrafttas.discombobulator.utils.PathLock;
 
 /**
@@ -81,6 +79,11 @@ public class Discombobulator implements Plugin<Project> {
 	 * used for the splash in the console
 	 */
 	private static String discoVersion;
+
+	/**
+	 * Versions where the accessor is changed to official mappings
+	 */
+	public static List<String> accessWidenerOfficialList = new ArrayList<>();
 
 	/**
 	 * Apply the gradle plugin to the project
@@ -155,15 +158,16 @@ public class Discombobulator implements Plugin<Project> {
 				return;
 			}
 			List<String> versionStrings = new ArrayList<>(versionPairs.keySet());
-			LinePreprocessor processor = new LinePreprocessor(versionStrings, config.getPatterns().get(), inverted);
+			LinePreprocessor lineProcessor = new LinePreprocessor(versionStrings, config.getPatterns().get(), inverted);
 
 			List<String> ignored = config.getIgnoredFileFormats().getOrElse(new ArrayList<>());
 			WildcardFileFilter fileFilter = WildcardFileFilter.builder().setWildcards(ignored).get();
 
-			Map<String, Map<String, Pair<String, String>>> emergencyTransformConfig = config.getEmergencyTransform().getOrNull();
-			EmergencyTransformer emergencyTransformer = new EmergencyTransformer(emergencyTransformConfig);
+//			Map<String, Map<String, Pair<String, String>>> emergencyTransformConfig = config.getEmergencyTransform().getOrNull();
+//			EmergencyTransformer emergencyTransformer = new EmergencyTransformer(emergencyTransformConfig, versionStrings);
+			accessWidenerOfficialList = config.getAccessWidenerOfficial().get();
 
-			fileProcessor = new FilePreprocessor(processor, fileFilter, emergencyTransformer);
+			fileProcessor = new FilePreprocessor(lineProcessor, fileFilter);
 
 			// Yes this is yoinked from the gradle forums to get the disco version. Is there
 			// a better method? Probably. Do I care? Currently, no.
