@@ -1,6 +1,7 @@
 package com.minecrafttas.discombobulator.tasks;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -11,6 +12,7 @@ import org.gradle.api.tasks.TaskAction;
  * <p>But you can register separate tasks to the root project, that will execute before everything else, so to stop it,<br>
  * we just need to throw an exception and it will stop all following tasks. Thanks Gradle! 
  */
+@CacheableTask
 public class TaskPreprocessVersionError extends DefaultTask {
 
 	/**

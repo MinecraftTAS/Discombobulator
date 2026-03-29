@@ -125,4 +125,16 @@ public abstract class PreprocessingConfiguration {
 	 * @return The line feed string
 	 */
 	public abstract Property<String> getDefaultLineFeed();
+
+//	/**
+//	 * <p>If a file needs transforming but does not support comments
+//	 * @return A map with the version number as key and a map as value which contains the filename and a pair of strings with search and replace respectively
+//	 */
+//	public abstract MapProperty<String, Map<String, Pair<String, String>>> getEmergencyTransform();
+
+	/**
+	 * @return Versions where the accesswidener is changed to official mappings
+	 */
+	public abstract ListProperty<String> getAccessWidenerOfficial();
+
 }

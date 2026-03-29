@@ -20,6 +20,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.tasks.TaskPreprocessWatch.CurrentFilePreprocessAction;
 import com.minecrafttas.discombobulator.utils.BetterFileWalker;
+import com.minecrafttas.discombobulator.utils.EmergencyTransformer;
 import com.minecrafttas.discombobulator.utils.LineFeedHelper;
 import com.minecrafttas.discombobulator.utils.SafeFileOperations;
 
@@ -45,6 +46,7 @@ public class FilePreprocessor {
 	 * Creates a new {@link FilePreprocessor}
 	 * @param processor The {@link #lineProcessor}
 	 * @param fileFilter The {@link #fileFilter}
+	 * @param emergencyTransformer The {@link EmergencyTransformer}
 	 */
 	public FilePreprocessor(LinePreprocessor processor, WildcardFileFilter fileFilter) {
 		this.lineProcessor = processor;
@@ -179,6 +181,7 @@ public class FilePreprocessor {
 	 */
 	public List<String> preprocessLines(List<String> inLines, Path outFile, String version, String extension) throws Exception {
 		List<String> lines = lineProcessor.preprocess(version, inLines, extension);
+
 		writeLines(lines, outFile);
 		return lines;
 	}

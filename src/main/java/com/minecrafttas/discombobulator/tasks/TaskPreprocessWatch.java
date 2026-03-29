@@ -25,6 +25,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FilenameUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
@@ -42,6 +43,7 @@ import com.minecrafttas.discombobulator.utils.SafeFileOperations;
  * 
  * @author Pancake, Scribble
  */
+@CacheableTask
 public abstract class TaskPreprocessWatch extends DefaultTask {
 
 	private List<FileWatcherThread> threads = new ArrayList<>();
@@ -152,7 +154,7 @@ public abstract class TaskPreprocessWatch extends DefaultTask {
 				// Get path relative to the root dir
 				String extension = FilenameUtils.getExtension(path.getFileName().toString());
 				try {
-					System.out.println(String.format("[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
+					System.out.println(String.format("\n[%s%s%s]", PURPLE_BRIGHT, TaskPreprocessWatch.findVersionFromPath(path, versions), WHITE));
 					// Preprocess in all sub versions
 					currentFileAction = Discombobulator.fileProcessor.preprocessVersions(path, versions, extension, subSourceDir, true);
 

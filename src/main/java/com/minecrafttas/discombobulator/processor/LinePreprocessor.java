@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.minecrafttas.discombobulator.Discombobulator;
 import com.minecrafttas.discombobulator.utils.Pair;
 
 /*
@@ -226,6 +227,9 @@ public class LinePreprocessor {
 
 			out.add(line);
 		}
+
+		//TODO Very dumb, very temporary method to fix accesswideners
+		out = makeAccessWidenerOfficial(fileending, targetVersion, out);
 
 		return out;
 	}
@@ -999,5 +1003,30 @@ public class LinePreprocessor {
 			}
 		}
 		return replacement;
+	}
+
+	/**
+	 * Very temporary method to support unobfuscated mcversions, by changing the "named" in the first line of the accesswidener to "official"
+	 * if a version is declared in the build.gradle
+	 * 
+	 * @param extension
+	 * @param targetVersion
+	 * @param lines
+	 * @return
+	 */
+	private List<String> makeAccessWidenerOfficial(String extension, String targetVersion, List<String> lines) {
+		if (!"accesswidener".equals(extension)) {
+			return lines;
+		}
+
+		if (Discombobulator.accessWidenerOfficialList.contains(targetVersion)) {
+			String line = lines.get(0).replace("named", "official");
+			lines.set(0, line);
+		} else {
+			String line = lines.get(0).replace("official", "named");
+			lines.set(0, line);
+		}
+
+		return lines;
 	}
 }

@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.TaskAction;
 
 import com.minecrafttas.discombobulator.Discombobulator;
@@ -30,6 +31,7 @@ import com.minecrafttas.discombobulator.utils.PortLock;
  * 
  * @author Pancake, Scribble
  */
+@CacheableTask
 public class TaskPreprocessBase extends DefaultTask {
 
 	@TaskAction

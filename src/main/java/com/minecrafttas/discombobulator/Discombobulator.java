@@ -81,6 +81,11 @@ public class Discombobulator implements Plugin<Project> {
 	private static String discoVersion;
 
 	/**
+	 * Versions where the accessor is changed to official mappings
+	 */
+	public static List<String> accessWidenerOfficialList = new ArrayList<>();
+
+	/**
 	 * Apply the gradle plugin to the project
 	 */
 	@Override
@@ -111,7 +116,7 @@ public class Discombobulator implements Plugin<Project> {
 		List<Task> compileTaskList = new ArrayList<>();
 		Map<String, Path> buildDirs = new HashMap<>();
 		for (Project subProject : project.getSubprojects()) {
-			Task compileTask = subProject.getTasksByName("remapJar", false).iterator().next();
+			Task compileTask = subProject.getTasksByName("build", false).iterator().next();
 			compileTaskList.add(compileTask);
 
 			buildDirs.put(subProject.getName(), getBuildDir(subProject).resolve("libs"));
@@ -153,12 +158,16 @@ public class Discombobulator implements Plugin<Project> {
 				return;
 			}
 			List<String> versionStrings = new ArrayList<>(versionPairs.keySet());
-			LinePreprocessor processor = new LinePreprocessor(versionStrings, config.getPatterns().get(), inverted);
+			LinePreprocessor lineProcessor = new LinePreprocessor(versionStrings, config.getPatterns().get(), inverted);
 
 			List<String> ignored = config.getIgnoredFileFormats().getOrElse(new ArrayList<>());
 			WildcardFileFilter fileFilter = WildcardFileFilter.builder().setWildcards(ignored).get();
 
-			fileProcessor = new FilePreprocessor(processor, fileFilter);
+//			Map<String, Map<String, Pair<String, String>>> emergencyTransformConfig = config.getEmergencyTransform().getOrNull();
+//			EmergencyTransformer emergencyTransformer = new EmergencyTransformer(emergencyTransformConfig, versionStrings);
+			accessWidenerOfficialList = config.getAccessWidenerOfficial().get();
+
+			fileProcessor = new FilePreprocessor(lineProcessor, fileFilter);
 
 			// Yes this is yoinked from the gradle forums to get the disco version. Is there
 			// a better method? Probably. Do I care? Currently, no.
@@ -172,7 +181,7 @@ public class Discombobulator implements Plugin<Project> {
 
 	public static String getSplash() {
 		return "\n" + (DISABLE_ANSI ? getColorLessSplash() : getColoredSplash()) + "\n\n"
-				+ getCenterText(String.format("Enable configuration cache today!")) + "\n"
+				+ getCenterText(String.format("Now with unobfuscated support!")) + "\n"
 				+ getCenterText("Created by Pancake and Scribble") + "\n"
 				+ getCenterText(discoVersion) + "\n\n";
 
